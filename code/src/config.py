@@ -106,3 +106,5 @@ except Exception as e:
     print(f"Error cargando configuración: {e}")
     # Usar configuración simple como fallback
     from .config_simple import settings
+# Commit 4 - 2024-01-04
+# Change: 1757423578
