@@ -1,0 +1,14 @@
+# Ignorar repositorios de prueba generados por los scripts
+test-repo/
+paqueteria-simulation-fork/
+paqueteria-offline-simulation/
+commit.log
+
+# Ignorar archivos temporales
+*.tmp
+*.log
+*.bak
+
+# Ignorar archivos de simulación
+simulation-*.log
+test-*.log
