@@ -215,6 +215,7 @@
                 if (data.user) {
                     document.cookie = `user_name=${data.user.username}; path=/; max-age=1800; SameSite=Lax`;
                     document.cookie = `user_role=${data.user.role}; path=/; max-age=1800; SameSite=Lax`;
+                    document.cookie = `user_id=${data.user.id}; path=/; max-age=1800; SameSite=Lax`;
                 }
             }
             

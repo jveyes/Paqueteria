@@ -9,7 +9,7 @@ from typing import List, Optional
 import uuid
 
 from ..database.database import get_db
-from ..models.message import Message, MessageType, MessageStatus
+from ..models.message import Message, MessageType, MessageStatus, MessagePriority
 from ..models.user import User
 from ..schemas.message import (
     CustomerInquiryCreate, 
@@ -147,33 +147,156 @@ async def test_messages():
     """Endpoint de prueba simple"""
     return {"message": "Endpoint funcionando", "timestamp": datetime.now().isoformat()}
 
+@router.get("/tracking/{tracking_code}")
+async def get_messages_by_tracking_code(
+    tracking_code: str,
+    db: Session = Depends(get_db)
+):
+    """Obtener mensajes por código de tracking (público)"""
+    try:
+        # Buscar mensajes por código de tracking con relaciones
+        messages = db.query(Message).filter(
+            Message.package_tracking_code == tracking_code.upper()
+        ).order_by(desc(Message.created_at)).all()
+        
+        # Convertir a formato de respuesta
+        result = []
+        for message in messages:
+            # Obtener username del administrador que respondió
+            admin_username = None
+            if message.responded_by:
+                admin_username = message.responded_by.username
+            
+            result.append({
+                "id": str(message.id),
+                "customer_name": message.customer_name,
+                "customer_phone": message.customer_phone,
+                "customer_email": message.customer_email,
+                "package_guide_number": message.package_guide_number,
+                "package_tracking_code": message.package_tracking_code,
+                "subject": message.subject,
+                "content": message.content,
+                "message_type": message.message_type.value if hasattr(message.message_type, 'value') else str(message.message_type),
+                "status": message.status.value if hasattr(message.status, 'value') else str(message.status),
+                "created_at": message.created_at.isoformat(),
+                "updated_at": message.updated_at.isoformat() if message.updated_at else None,
+                "admin_response": message.admin_response,
+                "responded_at": message.responded_at.isoformat() if message.responded_at else None,
+                "admin_username": admin_username
+            })
+        
+        return result
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener mensajes: {str(e)}"
+        )
+
 @router.get("/")
 async def list_messages(
+    page: int = Query(1, ge=1, description="Número de página"),
+    limit: int = Query(20, ge=1, le=100, description="Elementos por página"),
+    status: Optional[str] = Query(None, description="Filtrar por estado"),
+    message_type: Optional[MessageType] = Query(None, description="Filtrar por tipo de mensaje"),
+    priority: Optional[MessagePriority] = Query(None, description="Filtrar por prioridad"),
+    search: Optional[str] = Query(None, description="Búsqueda en nombre, teléfono o contenido"),
+    unread_only: bool = Query(False, description="Solo mensajes no leídos"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    """Listar mensajes (solo usuarios autenticados)"""
-    # Obtener mensajes de la base de datos
-    messages = db.query(Message).limit(10).all()
-    
-    # Convertir a formato simple
-    result = []
-    for message in messages:
-        result.append({
-            "id": str(message.id),
-            "subject": message.subject,
-            "content": message.content,
-            "customer_name": message.customer_name,
-            "customer_phone": message.customer_phone,
-            "is_read": message.is_read,
-            "status": message.status.value if hasattr(message.status, 'value') else str(message.status),
-            "message_type": message.message_type.value if hasattr(message.message_type, 'value') else str(message.message_type),
-            "created_at": "2025-09-01T15:00:00",
-            "package_guide_number": message.package_guide_number,
-            "package_tracking_code": message.package_tracking_code
-        })
-    
-    return result
+    """Listar mensajes con paginación y filtros (solo usuarios autenticados)"""
+    try:
+        # Construir query base
+        query = db.query(Message)
+        
+        # Aplicar filtros
+        if status:
+            if status == "unread":
+                # No Leídos: mensajes que no se han visualizado
+                query = query.filter(Message.is_read == False)
+            elif status == "pending":
+                # Pendientes: mensajes que se visualizaron pero no tienen respuesta
+                query = query.filter(
+                    Message.is_read == True,
+                    Message.admin_response.is_(None)
+                )
+            elif status == "closed":
+                # Cerrados: mensajes que ya tienen respuesta
+                query = query.filter(Message.admin_response.isnot(None))
+            else:
+                # Filtro por estado tradicional (para compatibilidad)
+                query = query.filter(Message.status == status)
+        
+        if message_type:
+            query = query.filter(Message.message_type == message_type)
+        
+        if priority:
+            query = query.filter(Message.priority == priority)
+        
+        # Remover el filtro unread_only para evitar conflictos
+        # if unread_only and status != "unread":
+        #     query = query.filter(Message.is_read == False)
+        
+        if search:
+            search_term = f"%{search}%"
+            query = query.filter(
+                or_(
+                    Message.customer_name.ilike(search_term),
+                    Message.customer_phone.ilike(search_term),
+                    Message.content.ilike(search_term),
+                    Message.subject.ilike(search_term)
+                )
+            )
+        
+        # Aplicar paginación y ordenamiento (por prioridad y fecha)
+        total = query.count()
+        messages = query.order_by(
+            Message.priority.desc(),  # Urgent primero, luego High, Normal, Low
+            desc(Message.created_at)
+        ).offset((page - 1) * limit).limit(limit).all()
+        
+        # Convertir a formato de respuesta
+        result = []
+        for message in messages:
+            result.append({
+                "id": str(message.id),
+                "subject": message.subject,
+                "content": message.content,
+                "customer_name": message.customer_name,
+                "customer_phone": message.customer_phone,
+                "customer_email": message.customer_email,
+                "is_read": message.is_read,
+                "status": message.status.value if hasattr(message.status, 'value') else str(message.status),
+                "message_type": message.message_type.value if hasattr(message.message_type, 'value') else str(message.message_type),
+                "priority": message.priority.value if hasattr(message.priority, 'value') else str(message.priority),
+                "created_at": message.created_at.isoformat(),
+                "package_guide_number": message.package_guide_number,
+                "package_tracking_code": message.package_tracking_code
+            })
+        
+        # Calcular información de paginación
+        total_pages = (total + limit - 1) // limit
+        has_next = page < total_pages
+        has_prev = page > 1
+        
+        return {
+            "messages": result,
+            "pagination": {
+                "page": page,
+                "limit": limit,
+                "total": total,
+                "total_pages": total_pages,
+                "has_next": has_next,
+                "has_prev": has_prev
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener mensajes: {str(e)}"
+        )
 
 @router.get("/stats", response_model=MessageStats)
 async def get_message_stats(
@@ -182,16 +305,23 @@ async def get_message_stats(
 ):
     """Obtener estadísticas de mensajes"""
     total_messages = db.query(Message).count()
-    pending_messages = db.query(Message).filter(Message.status == MessageStatus.PENDING).count()
-    resolved_messages = db.query(Message).filter(
-        Message.status.in_([MessageStatus.RESOLVED, MessageStatus.CLOSED])
-    ).count()
+    
+    # No Leídos: mensajes que no se han visualizado
     unread_messages = db.query(Message).filter(Message.is_read == False).count()
+    
+    # Pendientes: mensajes que se visualizaron pero no tienen respuesta
+    pending_messages = db.query(Message).filter(
+        Message.is_read == True,
+        Message.admin_response.is_(None)
+    ).count()
+    
+    # Cerrados: mensajes que ya tienen respuesta
+    closed_messages = db.query(Message).filter(Message.admin_response.isnot(None)).count()
     
     return MessageStats(
         total_messages=total_messages,
         pending_messages=pending_messages,
-        resolved_messages=resolved_messages,
+        closed_messages=closed_messages,
         unread_messages=unread_messages
     )
 
@@ -234,6 +364,7 @@ async def get_message_detail(
             content=message.content,
             message_type=message.message_type,
             status=message.status,
+            priority=message.priority,
             is_read=message.is_read,
             read_at=message.read_at,
             read_by_name=read_by_name,
@@ -254,7 +385,7 @@ async def get_message_detail(
 @router.post("/{message_id}/respond", status_code=status.HTTP_200_OK)
 async def respond_to_message(
     message_id: str,
-    response: MessageResponse,
+    response_data: dict,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
@@ -268,13 +399,34 @@ async def respond_to_message(
                 detail="Mensaje no encontrado"
             )
         
+        # Validar que se proporcionó una respuesta
+        response_text = response_data.get('response')
+        if not response_text:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="El campo 'response' es requerido"
+            )
+        
+        # Validar longitud de la respuesta
+        if len(response_text.strip()) < 5:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="La respuesta debe tener al menos 5 caracteres"
+            )
+        
+        if len(response_text) > 2000:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="La respuesta no puede exceder 2000 caracteres"
+            )
+        
         # Responder al mensaje
-        message.respond(response.response, current_user.id)
+        message.respond(response_text.strip(), current_user.id)
         db.commit()
         
         return {
-            "message": "Respuesta enviada exitosamente",
-            "status": "resolved"
+            "message": "Respuesta enviada exitosamente. El mensaje ha sido cerrado automáticamente.",
+            "status": "closed"
         }
         
     except ValueError:
@@ -286,7 +438,7 @@ async def respond_to_message(
 @router.put("/{message_id}/status", status_code=status.HTTP_200_OK)
 async def update_message_status(
     message_id: str,
-    new_status: MessageStatus,
+    request: dict,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
@@ -300,7 +452,23 @@ async def update_message_status(
                 detail="Mensaje no encontrado"
             )
         
-        message.status = new_status
+        new_status = request.get('new_status')
+        if not new_status:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="new_status es requerido"
+            )
+        
+        # Validar que el estado sea válido
+        try:
+            status_enum = MessageStatus(new_status)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Estado inválido: {new_status}"
+            )
+        
+        message.status = status_enum
         message.updated_at = datetime.now()
         db.commit()
         

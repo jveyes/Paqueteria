@@ -96,8 +96,6 @@ async def receive_package(
 ):
     """Marcar paquete como recibido"""
     
-    # Verificar rate limit (temporalmente deshabilitado)
-    
     package = db.query(Package).filter(Package.id == package_id).first()
     
     if not package:
@@ -116,18 +114,30 @@ async def receive_package(
     package.status = PackageStatus.RECIBIDO
     package.received_at = get_colombia_now()
     
+    # Calcular costos automáticamente con el nuevo sistema
+    from ..services.rate_service import RateService
+    rate_service = RateService(db)
+    
+    # Calcular costo base según tipo de paquete
+    base_costs = rate_service.calculate_package_costs(package.package_type)
+    package.storage_cost = base_costs["storage_cost"]
+    package.delivery_cost = base_costs["delivery_cost"]
+    package.total_cost = base_costs["total_cost"]
+    
     # Registrar actividad
     activity_log = UserActivityLog(
         user_id=current_user.id,
         activity_type=ActivityType.STATUS_CHANGE,
-        description=f"Paquete {package.tracking_number} marcado como RECIBIDO",
+        description=f"Paquete {package.tracking_number} marcado como RECIBIDO - Costo: ${package.total_cost:,.0f}",
         ip_address=request.client.host if request.client else None,
         user_agent=request.headers.get("user-agent"),
         activity_metadata={
             "package_id": str(package.id),
             "old_status": "anunciado",
             "new_status": "recibido",
-            "action": "receive"
+            "action": "receive",
+            "cost_calculated": float(package.total_cost),
+            "package_type": package.package_type.value
         }
     )
     
@@ -135,14 +145,15 @@ async def receive_package(
     db.commit()
     db.refresh(package)
     
-    logger.info(f"Paquete {package.tracking_number} marcado como RECIBIDO por usuario {current_user.email}")
+    logger.info(f"Paquete {package.tracking_number} marcado como RECIBIDO por usuario {current_user.email} - Costo: ${package.total_cost:,.0f}")
     
     return {
         "success": True,
         "message": f"Paquete {package.tracking_number} marcado como RECIBIDO",
         "package_id": str(package.id),
         "new_status": package.status.value,
-        "received_at": package.received_at.isoformat()
+        "received_at": package.received_at.isoformat(),
+        "cost_calculated": float(package.total_cost)
     }
 
 @router.post("/{package_id}/deliver")
@@ -153,8 +164,6 @@ async def deliver_package(
     current_user: User = Depends(get_current_active_user)
 ):
     """Marcar paquete como entregado"""
-    
-    # Verificar rate limit (temporalmente deshabilitado)
     
     package = db.query(Package).filter(Package.id == package_id).first()
     
@@ -170,6 +179,24 @@ async def deliver_package(
             detail=f"No se puede entregar un paquete en estado {package.status.value}"
         )
     
+    # Calcular costos por tiempo excedido antes de entregar
+    from ..services.rate_service import RateService
+    rate_service = RateService(db)
+    
+    # Calcular costo total incluyendo tiempo excedido
+    total_costs = rate_service.calculate_total_package_cost(
+        package.package_type,
+        package.received_at,
+        get_colombia_now()
+    )
+    
+    # Actualizar costos si hay tiempo excedido
+    if total_costs["overtime_cost"] > 0:
+        package.total_cost = total_costs["total_cost"]
+        overtime_message = f" (Incluye ${total_costs['overtime_cost']:,.0f} por tiempo excedido)"
+    else:
+        overtime_message = ""
+    
     # Cambiar estado a ENTREGADO
     package.status = PackageStatus.ENTREGADO
     package.delivered_at = get_colombia_now()
@@ -178,14 +205,17 @@ async def deliver_package(
     activity_log = UserActivityLog(
         user_id=current_user.id,
         activity_type=ActivityType.STATUS_CHANGE,
-        description=f"Paquete {package.tracking_number} marcado como ENTREGADO",
+        description=f"Paquete {package.tracking_number} marcado como ENTREGADO - Costo final: ${package.total_cost:,.0f}{overtime_message}",
         ip_address=request.client.host if request.client else None,
         user_agent=request.headers.get("user-agent"),
         activity_metadata={
             "package_id": str(package.id),
             "old_status": "recibido",
             "new_status": "entregado",
-            "action": "deliver"
+            "action": "deliver",
+            "final_cost": float(package.total_cost),
+            "overtime_cost": total_costs["overtime_cost"],
+            "overtime_hours": total_costs["overtime_hours"]
         }
     )
     
@@ -193,14 +223,17 @@ async def deliver_package(
     db.commit()
     db.refresh(package)
     
-    logger.info(f"Paquete {package.tracking_number} marcado como ENTREGADO por usuario {current_user.email}")
+    logger.info(f"Paquete {package.tracking_number} marcado como ENTREGADO por usuario {current_user.email} - Costo final: ${package.total_cost:,.0f}")
     
     return {
         "success": True,
         "message": f"Paquete {package.tracking_number} marcado como ENTREGADO",
         "package_id": str(package.id),
         "new_status": package.status.value,
-        "delivered_at": package.delivered_at.isoformat()
+        "delivered_at": package.delivered_at.isoformat(),
+        "final_cost": float(package.total_cost),
+        "overtime_cost": total_costs["overtime_cost"],
+        "overtime_hours": total_costs["overtime_hours"]
     }
 
 @router.post("/{package_id}/cancel")
@@ -210,9 +243,14 @@ async def cancel_package(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    """Cancelar paquete (puede ser en cualquier estado)"""
+    """Cancelar paquete (solo administradores)"""
     
-    # Verificar rate limit (temporalmente deshabilitado)
+    # Verificar que el usuario sea administrador
+    if current_user.role.value != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo los administradores pueden cancelar paquetes"
+        )
     
     package = db.query(Package).filter(Package.id == package_id).first()
     
@@ -237,14 +275,15 @@ async def cancel_package(
     activity_log = UserActivityLog(
         user_id=current_user.id,
         activity_type=ActivityType.STATUS_CHANGE,
-        description=f"Paquete {package.tracking_number} CANCELADO desde estado {old_status}",
+        description=f"Paquete {package.tracking_number} CANCELADO desde estado {old_status} por administrador",
         ip_address=request.client.host if request.client else None,
         user_agent=request.headers.get("user-agent"),
         activity_metadata={
             "package_id": str(package.id),
             "old_status": old_status,
             "new_status": "cancelado",
-            "action": "cancel"
+            "action": "cancel",
+            "cancelled_by_admin": True
         }
     )
     
@@ -252,14 +291,121 @@ async def cancel_package(
     db.commit()
     db.refresh(package)
     
-    logger.info(f"Paquete {package.tracking_number} CANCELADO desde estado {old_status} por usuario {current_user.email}")
+    logger.info(f"Paquete {package.tracking_number} CANCELADO desde estado {old_status} por administrador {current_user.email}")
     
     return {
         "success": True,
-        "message": f"Paquete {package.tracking_number} cancelado exitosamente",
+        "message": f"Paquete {package.tracking_number} cancelado exitosamente por administrador",
         "package_id": str(package.id),
         "new_status": package.status.value,
         "old_status": old_status
+    }
+
+@router.put("/{package_id}")
+async def update_package(
+    package_id: str,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Actualizar información del paquete"""
+    
+    package = db.query(Package).filter(Package.id == package_id).first()
+    
+    if not package:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Paquete no encontrado"
+        )
+    
+    # Obtener datos del request
+    body = await request.json()
+    
+    # Actualizar campos permitidos
+    if "package_type" in body:
+        package.package_type = body["package_type"]
+    
+    if "package_condition" in body:
+        package.package_condition = body["package_condition"]
+    
+    if "observations" in body:
+        package.observations = body["observations"]
+    
+    # Registrar actividad
+    activity_log = UserActivityLog(
+        user_id=current_user.id,
+        activity_type=ActivityType.STATUS_CHANGE,
+        description=f"Información del paquete {package.tracking_number} actualizada",
+        ip_address=request.client.host if request.client else None,
+        user_agent=request.headers.get("user-agent"),
+        activity_metadata={
+            "package_id": str(package.id),
+            "action": "update_info",
+            "updated_fields": list(body.keys())
+        }
+    )
+    
+    db.add(activity_log)
+    db.commit()
+    db.refresh(package)
+    
+    logger.info(f"Paquete {package.tracking_number} actualizado por usuario {current_user.email}")
+    
+    return {
+        "success": True,
+        "message": f"Paquete {package.tracking_number} actualizado exitosamente",
+        "package_id": str(package.id)
+    }
+
+@router.get("/{package_id}/cost-calculation")
+async def calculate_package_cost(
+    package_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Calcular costo actual del paquete incluyendo tiempo excedido"""
+    
+    package = db.query(Package).filter(Package.id == package_id).first()
+    
+    if not package:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Paquete no encontrado"
+        )
+    
+    from ..services.rate_service import RateService
+    rate_service = RateService(db)
+    
+    # Calcular costo total
+    if package.status == PackageStatus.RECIBIDO and package.received_at:
+        # Si está recibido, calcular con tiempo excedido
+        total_costs = rate_service.calculate_total_package_cost(
+            package.package_type,
+            package.received_at,
+            get_colombia_now()
+        )
+    else:
+        # Si no está recibido, solo costo base
+        base_costs = rate_service.calculate_package_costs(package.package_type)
+        total_costs = {
+            "base_cost": base_costs["total_cost"],
+            "overtime_cost": 0.0,
+            "total_cost": base_costs["total_cost"],
+            "overtime_hours": 0,
+            "overtime_periods": 0,
+            "currency": "COP"
+        }
+    
+    return {
+        "package_id": str(package.id),
+        "tracking_number": package.tracking_number,
+        "status": package.status.value,
+        "package_type": package.package_type.value,
+        "current_cost": float(package.total_cost) if package.total_cost else 0,
+        "calculated_cost": total_costs,
+        "received_at": package.received_at.isoformat() if package.received_at else None,
+        "grace_period_hours": 24,
+        "overtime_rate_per_24h": 1000.0
     }
 
 @router.get("/{package_id}/history")
@@ -333,6 +479,17 @@ async def get_package_history(
                     "cancelled_by": current_user.email,
                     "cancelled_at": log.created_at.isoformat(),
                     "previous_status": metadata.get('old_status', 'desconocido')
+                }
+            })
+        elif metadata.get("action") == "update_info":
+            history.append({
+                "status": "actualizado",
+                "description": f"Información del paquete actualizada",
+                "timestamp": log.created_at.isoformat(),
+                "details": {
+                    "updated_by": current_user.email,
+                    "updated_at": log.created_at.isoformat(),
+                    "updated_fields": metadata.get('updated_fields', [])
                 }
             })
     

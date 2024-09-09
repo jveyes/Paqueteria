@@ -948,6 +948,105 @@ async def get_announcement_stats(
         "processed_announcements": processed_announcements
     }
 
+@router.post("/{announcement_id}/create-package")
+async def create_package_from_announcement(
+    announcement_id: uuid.UUID,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_active_user)
+):
+    """Crear un paquete desde un anuncio (procesar anuncio)"""
+    
+    # Obtener el anuncio
+    announcement = db.query(PackageAnnouncement).filter(
+        PackageAnnouncement.id == announcement_id
+    ).first()
+    
+    if not announcement:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Anuncio no encontrado"
+        )
+    
+    if announcement.is_processed:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Este anuncio ya ha sido procesado"
+        )
+    
+    # Obtener datos del request
+    body = await request.json()
+    package_type = body.get("package_type", "normal")
+    package_condition = body.get("package_condition", "bueno")
+    observations = body.get("observations", "")
+    
+    # Importar modelos necesarios
+    from ..models.package import Package, PackageType, PackageCondition, PackageStatus
+    from ..models.user_activity_log import UserActivityLog, ActivityType
+    
+    # Crear el paquete
+    new_package = Package(
+        tracking_number=announcement.guide_number,
+        customer_name=announcement.customer_name,
+        customer_phone=announcement.phone_number,
+        status=PackageStatus.RECIBIDO,  # Directamente como recibido
+        package_type=PackageType(package_type),
+        package_condition=PackageCondition(package_condition),
+        observations=observations,
+        announced_at=announcement.announced_at,
+        received_at=get_colombia_now(),
+        created_at=get_colombia_now(),
+        updated_at=get_colombia_now()
+    )
+    
+    # Calcular costos automáticamente
+    from ..services.rate_service import RateService
+    rate_service = RateService(db)
+    
+    base_costs = rate_service.calculate_package_costs(new_package.package_type)
+    new_package.storage_cost = base_costs["storage_cost"]
+    new_package.delivery_cost = base_costs["delivery_cost"]
+    new_package.total_cost = base_costs["total_cost"]
+    
+    db.add(new_package)
+    
+    # Marcar anuncio como procesado
+    announcement.is_processed = True
+    announcement.processed_at = get_colombia_now()
+    announcement.updated_at = get_colombia_now()
+    
+    # Registrar actividad
+    activity_log = UserActivityLog(
+        user_id=current_user.id,
+        activity_type=ActivityType.STATUS_CHANGE,
+        description=f"Anuncio {announcement.tracking_code} procesado y convertido en paquete {new_package.tracking_number} - Costo: ${new_package.total_cost:,.0f}",
+        ip_address=request.client.host if request.client else None,
+        user_agent=request.headers.get("user-agent"),
+        activity_metadata={
+            "announcement_id": str(announcement.id),
+            "package_id": str(new_package.id),
+            "action": "create_package_from_announcement",
+            "package_type": package_type,
+            "package_condition": package_condition,
+            "cost_calculated": float(new_package.total_cost)
+        }
+    )
+    
+    db.add(activity_log)
+    db.commit()
+    db.refresh(new_package)
+    
+    logger.info(f"Anuncio {announcement.tracking_code} procesado por usuario {current_user.email} - Paquete creado: {new_package.tracking_number}")
+    
+    return {
+        "success": True,
+        "message": f"Anuncio procesado exitosamente. Paquete {new_package.tracking_number} creado.",
+        "announcement_id": str(announcement.id),
+        "package_id": str(new_package.id),
+        "package_tracking": new_package.tracking_number,
+        "cost_calculated": float(new_package.total_cost)
+    }
+
 @router.get("/rate-limit/info")
 async def get_rate_limit_info_endpoint(request: Request):
     """Obtener información del rate limit para la IP actual"""

@@ -106,6 +106,36 @@ function formatColombiaDateTime(date) {
 }
 
 /**
+ * Formatea fecha y hora en formato dd/mm/yyyy hh:mm {am/pm} en zona horaria de Colombia
+ * @param {string|Date} date - Fecha a formatear
+ * @returns {string} Fecha y hora formateada en formato dd/mm/yyyy hh:mm {am/pm}
+ */
+function formatColombiaDateTimeShort(date) {
+    try {
+        // Primero convertir a zona horaria de Colombia
+        const colombiaDate = convertUTCToColombia(date);
+        
+        // Extraer componentes de la fecha
+        const day = String(colombiaDate.getDate()).padStart(2, '0');
+        const month = String(colombiaDate.getMonth() + 1).padStart(2, '0');
+        const year = colombiaDate.getFullYear();
+        
+        // Formatear hora con AM/PM
+        const hours = colombiaDate.getHours();
+        const minutes = String(colombiaDate.getMinutes()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const displayHours = hours % 12 || 12; // Convertir 0 a 12 para formato 12h
+        const displayMinutes = String(minutes).padStart(2, '0');
+        
+        return `${day}/${month}/${year} ${displayHours}:${displayMinutes} ${ampm}`;
+    } catch (error) {
+        console.error('Error formateando fecha corta de Colombia:', error);
+        // Fallback: mostrar la fecha original
+        return new Date(date).toLocaleString(COLOMBIA_LOCALE);
+    }
+}
+
+/**
  * Obtiene la fecha actual en zona horaria de Colombia
  * @returns {Date} Fecha actual en Colombia
  */
@@ -152,6 +182,7 @@ window.ColombiaTimezone = {
     formatDateOnly: formatColombiaDateOnly,
     formatTimeOnly: formatColombiaTimeOnly,
     formatDateTime: formatColombiaDateTime,
+    formatDateTimeShort: formatColombiaDateTimeShort,
     getNow: getColombiaNow,
     convertUTC: convertUTCToColombia,
     isColombiaTimezone: isColombiaTimezone,

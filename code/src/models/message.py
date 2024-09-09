@@ -22,10 +22,16 @@ class MessageType(str, enum.Enum):
 
 class MessageStatus(str, enum.Enum):
     """Estados de mensaje"""
-    PENDING = "pending"
-    IN_PROGRESS = "in_progress"
-    RESOLVED = "resolved"
-    CLOSED = "closed"
+    UNREAD = "UNREAD"
+    PENDING = "PENDING"
+    CLOSED = "CLOSED"
+
+class MessagePriority(str, enum.Enum):
+    """Prioridades de mensaje"""
+    LOW = "low"
+    NORMAL = "normal"
+    HIGH = "high"
+    URGENT = "urgent"
 
 class Message(BaseModel, Base):
     """Modelo de mensajes internos y consultas de clientes"""
@@ -49,7 +55,8 @@ class Message(BaseModel, Base):
     subject = Column(String(200), nullable=False)
     content = Column(Text, nullable=False)
     message_type = Column(Enum(MessageType), default=MessageType.CUSTOMER_INQUIRY)
-    status = Column(Enum(MessageStatus), default=MessageStatus.PENDING)
+    status = Column(Enum(MessageStatus), default=MessageStatus.UNREAD)
+    priority = Column(Enum(MessagePriority), default=MessagePriority.NORMAL)
     
     # Campos de timestamp
     created_at = Column(DateTime, default=datetime.now)
@@ -81,17 +88,19 @@ class Message(BaseModel, Base):
     @property
     def is_resolved(self):
         """Verifica si el mensaje está resuelto"""
-        return self.status in [MessageStatus.RESOLVED, MessageStatus.CLOSED]
+        return self.status == MessageStatus.CLOSED
     
     def mark_as_read(self, user_id):
         """Marca el mensaje como leído"""
         self.is_read = True
         self.read_at = datetime.now()
         self.read_by_id = user_id
+        if self.status == MessageStatus.UNREAD:
+            self.status = MessageStatus.PENDING
     
     def respond(self, response, user_id):
-        """Responde al mensaje"""
+        """Responde al mensaje y lo cierra automáticamente"""
         self.admin_response = response
         self.responded_at = datetime.now()
         self.responded_by_id = user_id
-        self.status = MessageStatus.RESOLVED
+        self.status = MessageStatus.CLOSED  # Cerrar automáticamente al responder

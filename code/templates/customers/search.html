@@ -58,64 +58,226 @@
         </div>
     </div>
 
-    <!-- Resultados de búsqueda -->
+    <!-- SECCIÓN 1: Historial del Paquete -->
     <div id="searchResults" class="mt-8 hidden">
         <div class="flex justify-center">
             <div class="max-w-md w-full">
                 <div class="bg-white rounded-xl shadow-lg border border-gray-100">
-            <!-- Header de resultados -->
-            <div class="border-b border-gray-100 px-4 sm:px-8 py-4 sm:py-6">
-                <div class="text-center">
-                    <h2 class="text-xl sm:text-2xl font-light text-gray-900">Historial del Paquete</h2>
-                </div>
-            </div>
-            
-            <!-- Contenido de resultados -->
-            <div class="p-4 sm:p-8">
-                <!-- Información del paquete -->
-                <div id="packageInfo" class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <div class="space-y-3">
-                        <div class="flex items-center">
-                            <span class="text-sm font-medium text-gray-700 uppercase tracking-wide">CLIENTE:</span>
-                            <span id="customerName" class="ml-2 text-lg font-semibold text-gray-900">-</span>
-                        </div>
-                        <div class="flex items-center">
-                            <span class="text-sm font-medium text-gray-700 uppercase tracking-wide">TELÉFONO:</span>
-                            <span id="customerPhone" class="ml-2 text-lg font-semibold text-gray-900">-</span>
-                        </div>
-                        <div class="flex items-center">
-                            <span class="text-sm font-medium text-gray-700 uppercase tracking-wide">NÚMERO DE GUÍA:</span>
-                            <span id="guideNumber" class="ml-2 text-lg font-semibold text-gray-900">-</span>
-                        </div>
-                        <!-- Código de consulta oculto por seguridad -->
-                        <div class="flex items-center hidden">
-                            <span class="text-sm font-medium text-gray-700 uppercase tracking-wide">CÓDIGO DE CONSULTA:</span>
-                            <span id="trackingCode" class="ml-2 text-lg font-semibold text-gray-900">-</span>
+                    <!-- Header de resultados -->
+                    <div class="border-b border-gray-100 px-4 sm:px-8 py-4 sm:py-6">
+                        <div class="text-center">
+                            <h2 class="text-xl sm:text-2xl font-light text-gray-900">Historial del Paquete</h2>
+                            <p class="text-sm text-gray-500 mt-1">Información completa del paquete y su estado</p>
                         </div>
                     </div>
-                </div>
-                
-                <!-- Estado actual -->
-                <div id="currentStatus" class="mb-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-3">Estado Actual del Paquete</h3>
-                    <div id="statusBadge" class="inline-flex items-center px-4 py-2 rounded-lg text-base font-medium shadow-sm">
-                        <!-- Se llenará dinámicamente -->
-                    </div>
-                </div>
-                
-                <!-- Línea de tiempo del historial -->
-                <div id="packageHistory" class="relative hidden">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Línea de Tiempo del Paquete</h3>
-                <div id="timelineContainer" class="relative">
-                    <!-- Línea de tiempo vertical -->
-                    <div class="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-200"></div>
                     
-                    <!-- Eventos de la línea de tiempo -->
-                    <div id="timelineEvents" class="space-y-6">
-                        <!-- Se llenará dinámicamente -->
+                    <!-- Contenido de resultados -->
+                    <div class="p-4 sm:p-8">
+                        <!-- Información del paquete -->
+                        <div id="packageInfo" class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                            <div class="space-y-3">
+                                <div class="flex items-center">
+                                    <span class="text-sm font-medium text-gray-700 uppercase tracking-wide">CLIENTE:</span>
+                                    <span id="customerName" class="ml-2 text-lg font-semibold text-gray-900">-</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="text-sm font-medium text-gray-700 uppercase tracking-wide">TELÉFONO:</span>
+                                    <span id="customerPhone" class="ml-2 text-lg font-semibold text-gray-900">-</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="text-sm font-medium text-gray-700 uppercase tracking-wide">NÚMERO DE GUÍA:</span>
+                                    <span id="guideNumber" class="ml-2 text-lg font-semibold text-gray-900">-</span>
+                                </div>
+                                <!-- Código de consulta oculto por seguridad -->
+                                <div class="flex items-center hidden">
+                                    <span class="text-sm font-medium text-gray-700 uppercase tracking-wide">CÓDIGO DE CONSULTA:</span>
+                                    <span id="trackingCode" class="ml-2 text-lg font-semibold text-gray-900">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Estado actual -->
+                        <div id="currentStatus" class="mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3">Estado Actual del Paquete</h3>
+                            <div id="statusBadge" class="inline-flex items-center px-4 py-2 rounded-lg text-base font-medium shadow-sm">
+                                <!-- Se llenará dinámicamente -->
+                            </div>
+                        </div>
+                        
+                        <!-- Línea de tiempo del historial -->
+                        <div id="packageHistory" class="relative hidden mt-8">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Línea de Tiempo del Paquete</h3>
+                            <div id="timelineContainer" class="relative">
+                                <!-- Línea de tiempo vertical -->
+                                <div class="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+                                
+                                <!-- Eventos de la línea de tiempo -->
+                                <div id="timelineEvents" class="space-y-6">
+                                    <!-- Se llenará dinámicamente -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN 2: Preguntas y Respuestas -->
+    <div id="conversationHistory" class="mt-8 hidden">
+        <div class="flex justify-center">
+            <div class="max-w-md w-full">
+                <div class="bg-white rounded-xl shadow-lg border border-gray-100">
+                    <!-- Header de conversaciones -->
+                    <div class="border-b border-gray-100 px-4 sm:px-8 py-4 sm:py-6">
+                        <div class="text-center">
+                            <h2 class="text-xl sm:text-2xl font-light text-gray-900">Preguntas y Respuestas</h2>
+                            <p class="text-sm text-gray-500 mt-1">Historial de mensajes y conversaciones</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Contenido de conversaciones -->
+                    <div class="p-4 sm:p-8">
+                        <div id="conversationContainer" class="space-y-4">
+                            <!-- Se llenará dinámicamente con los mensajes -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN 3: ¿Tienes alguna pregunta? -->
+    <div id="inquiryFormContainer" class="mt-8 hidden">
+        <div class="flex justify-center">
+            <div class="max-w-md w-full">
+                <div class="bg-white rounded-xl shadow-lg border border-gray-100">
+                    <!-- Header del formulario -->
+                    <div class="border-b border-gray-100 px-4 sm:px-8 py-4 sm:py-6">
+                        <div class="text-center">
+                            <h2 class="text-xl sm:text-2xl font-light text-gray-900">¿Tienes alguna pregunta?</h2>
+                            <p class="text-sm text-gray-500 mt-1">Envíanos tu consulta sobre tu paquete</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Contenido del formulario -->
+                    <div class="p-4 sm:p-8">
+                        <form id="inquiryForm" class="space-y-6">
+                            <!-- Campo de email (se oculta si ya existe) -->
+                            <div id="emailFieldContainer">
+                                <div class="input-with-icon">
+                                    <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path>
+                                    </svg>
+                                    <input type="email" 
+                                           id="customer_email" 
+                                           name="customer_email" 
+                                           required
+                                           class="w-full px-0 py-3 border-0 border-b-2 border-gray-200 focus:border-blue-600 focus:ring-0 bg-transparent transition-colors"
+                                           placeholder="Tu email para recibir la respuesta">
+                                </div>
+                            </div>
+                            
+                            <!-- Campo de mensaje -->
+                            <div>
+                                <div class="input-with-icon">
+                                    <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                    </svg>
+                                    <textarea id="content" 
+                                              name="content" 
+                                              required
+                                              minlength="3"
+                                              rows="4"
+                                              class="w-full px-0 py-3 border-0 border-b-2 border-gray-200 focus:border-blue-600 focus:ring-0 bg-transparent transition-colors resize-none"
+                                              placeholder="Escribe tu consulta sobre el paquete..."></textarea>
+                                </div>
+                            </div>
+                            
+                            <!-- Mensaje de email ya registrado -->
+                            <div id="existingEmailMessage" class="hidden">
+                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                    <div class="flex items-center">
+                                        <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <div>
+                                            <p class="text-sm font-medium text-blue-800">Email ya registrado</p>
+                                            <p class="text-xs text-blue-600">Ya tienes un email registrado para este código de consulta. Te responderemos a: <span id="registeredEmail" class="font-semibold"></span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Mensaje de consulta ya enviada -->
+                            <div id="existingInquiryMessage" class="hidden">
+                                <div class="relative">
+                                    <!-- Mensaje simple con azul básico -->
+                                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-5 shadow-md">
+                                        <div class="flex items-start space-x-4">
+                                            <!-- Icono simple -->
+                                            <div class="flex-shrink-0">
+                                                <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Contenido del mensaje -->
+                                            <div class="flex-1">
+                                                <h3 class="text-lg font-semibold text-blue-800 mb-2">Consulta ya enviada</h3>
+                                                <div id="existingInquiryMessage" class="mb-3">
+                                                    <p class="text-base text-blue-700 leading-relaxed"></p>
+                                                </div>
+                                                <p id="existingInquiryDate" class="text-sm text-blue-600"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Botón de envío -->
+                            <div class="text-center pt-4">
+                                <button type="submit" 
+                                        id="submitInquiryButton"
+                                        class="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                    </svg>
+                                    Enviar Consulta
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <!-- Mensaje de éxito -->
+                        <div id="inquirySuccess" class="hidden mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm text-green-700">Tu consulta ha sido enviada exitosamente. Te responderemos pronto.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mensaje de error -->
+                        <div id="inquiryError" class="hidden mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <p id="inquiryErrorText" class="text-sm text-red-700"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -462,6 +624,10 @@
         const errorMessage = document.getElementById('errorMessage');
         if (errorMessage) errorMessage.classList.add('hidden');
         
+        // SECCIÓN 1: Mostrar Historial del Paquete
+        const searchResults = document.getElementById('searchResults');
+        if (searchResults) searchResults.classList.remove('hidden');
+        
         // Llenar información del paquete
         const customerName = document.getElementById('customerName');
         const customerPhone = document.getElementById('customerPhone');
@@ -480,20 +646,20 @@
         const queryType = data.query_type;
         const inquiryInfo = data.inquiry_info;
         
-        // Controlar visibilidad del historial (Consultas y Respuestas)
+        // Controlar visibilidad del timeline del paquete
         console.log('🔧 DEBUG: queryType =', queryType);
         console.log('🔧 DEBUG: inquiryInfo =', inquiryInfo);
         console.log('🔧 DEBUG: should_show_history =', queryType ? queryType.should_show_history : 'undefined');
         
         if (queryType && queryType.should_show_history) {
-            // Es consulta por código de tracking: mostrar historial
-            console.log('✅ MOSTRANDO historial para tracking code');
+            // Es consulta por código de tracking: mostrar timeline del paquete
+            console.log('✅ MOSTRANDO timeline del paquete para tracking code');
             const packageHistory = document.getElementById('packageHistory');
             if (packageHistory) packageHistory.classList.remove('hidden');
             displayTimeline(data.history);
         } else {
-            // Es consulta por número de guía: ocultar historial
-            console.log('❌ OCULTANDO historial para número de guía');
+            // Es consulta por número de guía: ocultar timeline del paquete
+            console.log('❌ OCULTANDO timeline del paquete para número de guía');
             const packageHistory = document.getElementById('packageHistory');
             if (packageHistory) packageHistory.classList.add('hidden');
             // Limpiar el contenido del timeline para evitar que se muestre
@@ -503,25 +669,34 @@
             }
         }
         
-        // Controlar visibilidad del formulario de consulta (¿Tienes alguna pregunta?)
-        console.log('🔧 DEBUG: Verificando si debe mostrar formulario de consulta');
-        console.log('🔧 DEBUG: queryType.should_show_inquiry_form =', queryType ? queryType.should_show_inquiry_form : 'undefined');
-        
-        if (queryType && queryType.should_show_inquiry_form) {
-            // Es consulta por código de tracking: mostrar formulario con información de consultas
-            console.log('🔧 DEBUG: Llamando a showInquiryFormWithInfo con inquiryInfo:', inquiryInfo);
-            showInquiryFormWithInfo(data.announcement, inquiryInfo);
-        } else {
-            // Es consulta por número de guía: ocultar formulario
-            console.log('🔧 DEBUG: Ocultando formulario de consulta (no es tracking code)');
-            hideInquiryForm();
+        // SECCIÓN 2: Mostrar Preguntas y Respuestas (solo para tracking code)
+        const conversationHistory = document.getElementById('conversationHistory');
+        if (conversationHistory) {
+            if (queryType && queryType.should_show_history) {
+                // Solo mostrar y cargar conversaciones si es búsqueda por tracking code
+                conversationHistory.classList.remove('hidden');
+                displayConversationHistory(data.announcement.tracking_code);
+            } else {
+                // Ocultar conversaciones si es búsqueda por número de guía
+                conversationHistory.classList.add('hidden');
+            }
         }
         
-        // Mostrar resultados
-        const searchResults = document.getElementById('searchResults');
+        // SECCIÓN 3: Mostrar formulario de consulta (solo para tracking code)
+        const inquiryFormContainer = document.getElementById('inquiryFormContainer');
+        if (inquiryFormContainer) {
+            if (queryType && queryType.should_show_history) {
+                // Solo mostrar formulario si es búsqueda por tracking code
+                inquiryFormContainer.classList.remove('hidden');
+                showInquiryFormWithInfo(data.announcement, inquiryInfo);
+            } else {
+                // Ocultar formulario si es búsqueda por número de guía
+                inquiryFormContainer.classList.add('hidden');
+            }
+        }
+        
+        // Scroll a los resultados
         if (searchResults) {
-            searchResults.classList.remove('hidden');
-            // Scroll a los resultados
             searchResults.scrollIntoView({ 
                 behavior: 'smooth' 
             });
@@ -560,6 +735,35 @@
         statusBadge.textContent = statusText;
     }
 
+    function formatDateShort(dateString) {
+        try {
+            // Crear fecha y convertir a zona horaria de Bogotá (UTC-5)
+            const date = new Date(dateString);
+            
+            // Convertir a zona horaria de Bogotá (UTC-5)
+            const bogotaOffset = -5 * 60; // -5 horas en minutos
+            const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
+            const bogotaTime = new Date(utc + (bogotaOffset * 60000));
+            
+            // Extraer componentes de la fecha en zona horaria de Bogotá
+            const day = String(bogotaTime.getDate()).padStart(2, '0');
+            const month = String(bogotaTime.getMonth() + 1).padStart(2, '0');
+            const year = bogotaTime.getFullYear();
+            
+            // Formatear hora con AM/PM en zona horaria de Bogotá
+            const hours = bogotaTime.getHours();
+            const minutes = String(bogotaTime.getMinutes()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const displayHours = hours % 12 || 12; // Convertir 0 a 12 para formato 12h
+            const displayMinutes = String(minutes).padStart(2, '0');
+            
+            return `${day}/${month}/${year} ${displayHours}:${displayMinutes} ${ampm}`;
+        } catch (error) {
+            console.error('Error formateando fecha:', error);
+            return dateString;
+        }
+    }
+
     function displayTimeline(history) {
         const timelineContainer = document.getElementById('timelineEvents');
         if (!timelineContainer) return;
@@ -577,8 +781,8 @@
             // Configuración según el estado
             const statusConfig = getStatusConfig(item.status);
             
-            // Formatear fecha en zona horaria de Colombia usando la utilidad
-            const timestamp = window.ColombiaTimezone.formatDateTime(item.timestamp);
+            // Formatear fecha en formato dd/mm/yyyy hh:mm {am/pm}
+            const timestamp = formatDateShort(item.timestamp);
             
             timelineItem.innerHTML = `
                 <!-- Icono del evento -->
@@ -611,6 +815,140 @@
             
             timelineContainer.appendChild(timelineItem);
         });
+    }
+
+    function displayConversationHistory(trackingCode) {
+        console.log('🚀 INICIANDO displayConversationHistory para tracking:', trackingCode);
+        
+        const conversationContainer = document.getElementById('conversationContainer');
+        if (!conversationContainer) {
+            console.log('❌ No se encontró conversationContainer');
+            return;
+        }
+        
+        console.log('✅ conversationContainer encontrado');
+        conversationContainer.innerHTML = '';
+        
+        // Hacer llamada a la API para obtener los mensajes
+        fetch(`/api/messages/tracking/${encodeURIComponent(trackingCode)}`)
+            .then(response => {
+                console.log('📡 Response status para mensajes:', response.status);
+                if (!response.ok) {
+                    throw new Error('Error al obtener mensajes');
+                }
+                return response.json();
+            })
+            .then(messages => {
+                console.log('✅ Mensajes recibidos:', messages);
+                
+                if (!messages || messages.length === 0) {
+                    conversationContainer.innerHTML = `
+                        <div class="text-center py-8 text-gray-500">
+                            <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                            </svg>
+                            <p class="text-sm">No hay consultas registradas para este paquete</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Ordenar mensajes por fecha (más antiguos primero para mostrar conversación cronológica)
+                messages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+                
+                // Mostrar cada mensaje (cada mensaje ya contiene la pregunta y posible respuesta)
+                messages.forEach((message, index) => {
+                    
+                    // Crear contenedor para el grupo de conversación
+                    const conversationGroup = document.createElement('div');
+                    conversationGroup.className = 'mb-6 space-y-4';
+                    
+                    // 1. PREGUNTA DEL CLIENTE
+                    const inquiryDiv = document.createElement('div');
+                    inquiryDiv.className = 'bg-blue-50 rounded-lg border border-blue-200 p-4';
+                    
+                    // Estado de la pregunta
+                    const statusText = message.status === 'PENDING' ? 'Pendiente' : 'Resuelto';
+                    const statusClass = message.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800';
+                    
+                    // Formatear fecha con formato dd/mm/yyyy hh:mm {am/pm}
+                    const inquiryDate = formatDateShort(message.created_at);
+                    
+                    inquiryDiv.innerHTML = `
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center space-x-3">
+                                <div class="flex-shrink-0">
+                                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-medium text-gray-900">${message.customer_name || 'Cliente'}</h4>
+                                    <p class="text-xs text-gray-500">${inquiryDate}</p>
+                                </div>
+                            </div>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClass}">${statusText}</span>
+                        </div>
+                        
+                        <div class="text-sm text-gray-700 leading-relaxed">
+                            ${message.content}
+                        </div>
+                    `;
+                    
+                    conversationGroup.appendChild(inquiryDiv);
+                    
+                    // 2. RESPUESTA DEL ADMINISTRADOR (si existe)
+                    if (message.admin_response) {
+                        const responseDiv = document.createElement('div');
+                        responseDiv.className = 'bg-green-50 rounded-lg border border-green-200 p-4 ml-8';
+                        
+                        // Formatear fecha de respuesta
+                        const responseDate = message.responded_at ? formatDateShort(message.responded_at) : formatDateShort(message.created_at);
+                        
+                        // Username del administrador (con primera letra en mayúscula)
+                        const adminUsername = message.admin_username ? 
+                            message.admin_username.charAt(0).toUpperCase() + message.admin_username.slice(1).toLowerCase() : 
+                            'Administrador';
+                        
+                        responseDiv.innerHTML = `
+                            <div class="flex items-start justify-between mb-3">
+                                <div class="flex items-center space-x-3">
+                                    <div class="flex-shrink-0">
+                                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-sm font-medium text-gray-900">Respuesta de ${adminUsername}</h4>
+                                        <p class="text-xs text-gray-500">${responseDate}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="text-sm text-gray-700 leading-relaxed">
+                                ${message.admin_response}
+                            </div>
+                        `;
+                        
+                        conversationGroup.appendChild(responseDiv);
+                    }
+                    
+                    conversationContainer.appendChild(conversationGroup);
+                });
+                
+                console.log('✅ Historial de conversaciones mostrado');
+            })
+            .catch(error => {
+                console.error('❌ Error obteniendo mensajes:', error);
+                conversationContainer.innerHTML = `
+                    <div class="text-center py-8 text-red-500">
+                        <svg class="mx-auto h-12 w-12 text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <p class="text-sm">Error al cargar las conversaciones</p>
+                    </div>
+                `;
+            });
     }
 
     function getStatusConfig(status) {
@@ -1024,12 +1362,19 @@
         
         // Asegurar que el campo de email esté visible y los mensajes ocultos
         const emailFieldContainer = document.getElementById('emailFieldContainer');
+        const emailField = document.getElementById('customer_email');
         const existingInquiryMessage = document.getElementById('existingInquiryMessage');
         const existingEmailMessage = document.getElementById('existingEmailMessage');
         
         if (emailFieldContainer) emailFieldContainer.classList.remove('hidden');
         if (existingInquiryMessage) existingInquiryMessage.classList.add('hidden');
         if (existingEmailMessage) existingEmailMessage.classList.add('hidden');
+        
+        // Restaurar el atributo required del campo de email cuando se muestra
+        if (emailField) {
+            emailField.setAttribute('required', 'required');
+            console.log('✅ Atributo required restaurado en el campo de email');
+        }
     }
     
     function showPendingMessageWarning(data) {
@@ -1061,10 +1406,17 @@
             existingInquiryMessage.classList.remove('hidden');
             console.log('✅ Mensaje de consulta pendiente mostrado');
             
-            // Mostrar información de la consulta pendiente
-            if (existingInquiryDate) {
-                existingInquiryDate.textContent = 'Ya tienes una consulta pendiente para este paquete. Espera a que te respondamos antes de enviar otra consulta.';
+        // Mostrar información de la consulta pendiente
+        const inquiryMessageContainer = document.getElementById('existingInquiryMessage');
+        if (inquiryMessageContainer) {
+            const messageText = inquiryMessageContainer.querySelector('#existingInquiryMessage p');
+            if (messageText) {
+                messageText.textContent = 'Ya tienes una consulta pendiente para este paquete. Espera a que te respondamos antes de enviar otra consulta.';
             }
+        }
+        if (existingInquiryDate) {
+            existingInquiryDate.textContent = '';
+        }
         }
         
         // Ocultar otros mensajes
@@ -1099,9 +1451,16 @@
         
         // Ocultar el campo de email
         const emailFieldContainer = document.getElementById('emailFieldContainer');
+        const emailField = document.getElementById('customer_email');
         if (emailFieldContainer) {
             emailFieldContainer.classList.add('hidden');
             console.log('✅ Campo de email ocultado');
+        }
+        
+        // Remover el atributo required del campo de email para evitar errores de validación
+        if (emailField) {
+            emailField.removeAttribute('required');
+            console.log('✅ Atributo required removido del campo de email');
         }
         
         // Mostrar mensaje de email registrado
