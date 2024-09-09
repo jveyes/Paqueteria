@@ -1,0 +1,221 @@
+# ========================================
+# PAQUETES EL CLUB v3.5 - Docker Compose para Localhost
+# ========================================
+
+version: '3.8'
+
+services:
+  # ========================================
+  # NOTA: Base de datos AWS RDS - No se requiere contenedor local
+  # ========================================
+
+  # ========================================
+  # REDIS - Cache y Message Broker
+  # ========================================
+  redis:
+    image: redis:7-alpine
+    container_name: paqueteria_v35_redis
+    command: redis-server --requirepass Redis2025!Secure --maxmemory 128mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    networks:
+      - paqueteria_network
+    restart: unless-stopped
+    environment:
+      - TZ=America/Bogota
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.25'
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # ========================================
+  # APLICACIÓN FASTAPI
+  # ========================================
+  app:
+    build:
+      context: ./code
+      dockerfile: Dockerfile
+    container_name: paqueteria_v35_app
+    environment:
+      - TZ=America/Bogota
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - ENVIRONMENT=development
+      - DEBUG=True
+      - DATABASE_URL=postgresql://jveyes:a?HC!2.*1#?[==:|289qAI=)#V4kDzl$$@ls-abe25e9bea57818f0ee32555c0e7b4a10e361535.ctobuhtlkwoj.us-east-1.rds.amazonaws.com:5432/paqueteria
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=paqueteria-secret-key-2025-super-secure-jwt-token-key-for-authentication-localhost
+    volumes:
+      - ./code/uploads:/app/uploads
+      - ./code/logs:/app/logs
+      - ./code/database/backups:/app/database/backups
+    networks:
+      - paqueteria_network
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ========================================
+  # CELERY WORKER - Tareas en Background
+  # ========================================
+  celery_worker:
+    build:
+      context: ./code
+      dockerfile: Dockerfile
+    container_name: paqueteria_v35_celery_worker
+    command: celery -A src.celery_app worker --loglevel=info --concurrency=2 --max-tasks-per-child=1000
+    environment:
+      - TZ=America/Bogota
+      - ENVIRONMENT=development
+      - DATABASE_URL=postgresql://jveyes:a?HC!2.*1#?[==:|289qAI=)#V4kDzl$$@ls-abe25e9bea57818f0ee32555c0e7b4a10e361535.ctobuhtlkwoj.us-east-1.rds.amazonaws.com:5432/paqueteria
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=paqueteria-secret-key-2025-super-secure-jwt-token-key-for-authentication-localhost
+    volumes:
+      - ./code/uploads:/app/uploads
+      - ./code/logs:/app/logs
+    networks:
+      - paqueteria_network
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+      app:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # ========================================
+  # NGINX - Proxy Reverso y SSL
+  # ========================================
+  nginx:
+    image: nginx:alpine
+    container_name: paqueteria_v35_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./code/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./code/nginx/ssl:/etc/ssl/certs:ro
+      - ./code/nginx/ssl:/etc/ssl/private:ro
+      - ./code/static:/app/static:ro
+      - ./code/uploads:/app/uploads:ro
+      - nginx_logs:/var/log/nginx
+    networks:
+      - paqueteria_network
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.25'
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://app:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # ========================================
+  # PROMETHEUS - Monitoreo
+  # ========================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: paqueteria_v35_prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./code/nginx/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - paqueteria_network
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+
+  # ========================================
+  # GRAFANA - Dashboards
+  # ========================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: paqueteria_v35_grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - paqueteria_network
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=Grafana2025!Secure
+      - GF_USERS_ALLOW_SIGN_UP=false
+    depends_on:
+      - prometheus
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+
+# ========================================
+# VOLUMES
+# ========================================
+volumes:
+  redis_data:
+    driver: local
+  nginx_logs:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+# ========================================
+# NETWORKS
+# ========================================
+networks:
+  paqueteria_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
