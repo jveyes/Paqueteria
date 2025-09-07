@@ -1,0 +1,205 @@
+# ========================================
+# PAQUETERIA v3.5 - Git Ignore
+# ========================================
+
+# Archivos de configuración sensibles
+.env
+.env.*
+!.env.example
+*.env
+.env.local
+.env.development
+.env.production
+.env.staging
+
+# Credenciales y secretos
+secrets/
+credentials/
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cer
+*.der
+
+# Base de datos
+*.db
+*.sqlite
+*.sqlite3
+database.sql
+database.db
+
+# Logs
+logs/
+*.log
+*.log.*
+log/
+
+# Archivos temporales
+tmp/
+temp/
+.tmp/
+.temp/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Docker
+.dockerignore
+
+# Uploads y archivos de usuario
+uploads/
+static/uploads/
+media/
+user_uploads/
+
+# Backups
+BACKUPS/
+backups/
+*.backup
+*.bak
+
+# SSL y certificados
+ssl/
+certificates/
+*.crt
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Cache
+.cache/
+cache/
+*.cache
+
+# Node modules (si hay frontend)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Archivos de sistema
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Archivos de configuración local
+config_local.py
+settings_local.py
+local_settings.py
+
+# Archivos de testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# Archivos específicos del proyecto
+code/logs/
+code/uploads/
+code/database/backups/
+code/static/uploads/
+code/static/images/uploads/
+
+# Archivos de configuración de desarrollo
+docker-compose.override.yml
+docker-compose.local.yml
+
+# Archivos de monitoreo local
+prometheus_data/
+grafana_data/
+redis_data/
+nginx_logs/
+
+# Archivos de testing local
+TEST/results/
+TEST/screenshots/
+TEST/reports/
+
+# Archivos de scripts temporales
+SCRIPTS/temp/
+SCRIPTS/logs/

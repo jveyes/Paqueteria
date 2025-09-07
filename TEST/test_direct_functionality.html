@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba Directa de Funcionalidad</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-2xl mx-auto">
+        <h1 class="text-2xl font-bold mb-6">Prueba Directa - Ocultación de Campo de Email</h1>
+        
+        <!-- Simulación de respuesta del API -->
+        <div class="bg-white p-4 rounded-lg mb-6">
+            <h2 class="text-lg font-semibold mb-2">Simulando respuesta del API:</h2>
+            <pre id="apiResponse" class="bg-gray-100 p-2 rounded text-sm"></pre>
+        </div>
+        
+        <!-- Botones de prueba -->
+        <div class="bg-white p-4 rounded-lg mb-6">
+            <h2 class="text-lg font-semibold mb-4">Simular diferentes respuestas del API:</h2>
+            <div class="space-y-2">
+                <button onclick="simulateAPIResponse(false)" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
+                    Simular: Sin email existente (mostrar campo)
+                </button>
+                <button onclick="simulateAPIResponse(true)" class="w-full bg-red-500 text-white p-2 rounded hover:bg-red-600">
+                    Simular: Con email existente (ocultar campo)
+                </button>
+            </div>
+        </div>
+        
+        <!-- Formulario de prueba (copiado exactamente del search.html) -->
+        <div id="inquiryFormContainer" class="bg-white rounded-xl shadow-lg border border-gray-100">
+            <!-- Header del formulario -->
+            <div class="border-b border-gray-100 px-4 sm:px-8 py-4 sm:py-6">
+                <div class="text-center">
+                    <h2 class="text-xl sm:text-2xl font-light text-gray-900">¿Tienes alguna pregunta?</h2>
+                    <p class="text-sm text-gray-500 mt-1">Envíanos tu consulta sobre tu paquete</p>
+                </div>
+            </div>
+            
+            <!-- Contenido del formulario -->
+            <div class="p-6 sm:p-8">
+                <form id="inquiryForm" class="space-y-8">
+                    <!-- Campo de mensaje -->
+                    <div class="space-y-2">
+                        <div class="input-with-icon">
+                            <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                            </svg>
+                            <textarea id="content" 
+                                      name="content" 
+                                      required
+                                      rows="4"
+                                      class="w-full px-0 py-4 border-0 border-b-2 border-gray-200 focus:border-blue-600 focus:ring-0 bg-transparent transition-all duration-200 text-gray-900 placeholder-gray-400 resize-none"
+                                      placeholder="Pregunta sobre tu paquete..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Campo de email (EXACTAMENTE COMO EN search.html) -->
+                    <div id="emailFieldContainer" class="space-y-2">
+                        <div class="input-with-icon">
+                            <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                            <input type="email" 
+                                   id="customer_email" 
+                                   name="customer_email" 
+                                   class="w-full px-0 py-4 border-0 border-b-2 border-gray-200 focus:border-blue-600 focus:ring-0 bg-transparent transition-all duration-200 text-gray-900 placeholder-gray-400"
+                                   placeholder="Tu email (opcional)">
+                        </div>
+                    </div>
+                    
+                    <!-- Mensaje de consulta existente (EXACTAMENTE COMO EN search.html) -->
+                    <div id="existingInquiryMessage" class="hidden bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="flex-shrink-0">
+                                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-blue-800">Consulta ya enviada</p>
+                                <p class="text-xs text-blue-600 mt-1" id="existingInquiryDate">Ya has enviado una consulta para este paquete anteriormente.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Botón de envío -->
+                    <div class="text-center pt-6">
+                        <button type="submit" 
+                                id="submitInquiryButton"
+                                class="inline-flex items-center px-10 py-4 border border-transparent text-base font-semibold rounded-xl shadow-lg text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 transform hover:scale-105">
+                            <svg class="-ml-1 mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                            </svg>
+                            <span id="submitInquiryButtonText">Enviar Consulta</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Log de resultados -->
+        <div class="bg-white p-4 rounded-lg mt-6">
+            <h2 class="text-lg font-semibold mb-2">Log de Debug:</h2>
+            <div id="logResults" class="bg-gray-100 p-2 rounded text-sm font-mono max-h-40 overflow-y-auto"></div>
+        </div>
+    </div>
+
+    <style>
+    .input-with-icon {
+        position: relative;
+    }
+
+    .input-with-icon input,
+    .input-with-icon textarea {
+        padding-left: 40px;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6B7280;
+        width: 20px;
+        height: 20px;
+        z-index: 10;
+    }
+    </style>
+
+    <script>
+    // COPIAR EXACTAMENTE LAS FUNCIONES DEL search.html
+    
+    function log(message) {
+        const logDiv = document.getElementById('logResults');
+        const timestamp = new Date().toLocaleTimeString();
+        logDiv.innerHTML += `[${timestamp}] ${message}\n`;
+        logDiv.scrollTop = logDiv.scrollHeight;
+        console.log(message);
+    }
+    
+    function showInquiryFormContainer() {
+        log('✅ Mostrando formulario completo');
+        
+        const inquiryFormContainer = document.getElementById('inquiryFormContainer');
+        if (inquiryFormContainer) {
+            inquiryFormContainer.classList.remove('hidden');
+        }
+        
+        const emailFieldContainer = document.getElementById('emailFieldContainer');
+        const existingInquiryMessage = document.getElementById('existingInquiryMessage');
+        
+        if (emailFieldContainer) emailFieldContainer.classList.remove('hidden');
+        if (existingInquiryMessage) existingInquiryMessage.classList.add('hidden');
+    }
+    
+    function hideEmailFieldAndShowMessage(createdAt) {
+        log('🔧 DEBUG: hideEmailFieldAndShowMessage ejecutándose con fecha: ' + createdAt);
+        
+        // Ocultar el campo de email
+        const emailFieldContainer = document.getElementById('emailFieldContainer');
+        const existingInquiryMessage = document.getElementById('existingInquiryMessage');
+        const existingInquiryDate = document.getElementById('existingInquiryDate');
+        
+        log('🔧 DEBUG: emailFieldContainer encontrado? ' + (emailFieldContainer !== null));
+        log('🔧 DEBUG: existingInquiryMessage encontrado? ' + (existingInquiryMessage !== null));
+        
+        if (emailFieldContainer) {
+            emailFieldContainer.classList.add('hidden');
+            log('✅ Campo de email ocultado');
+        } else {
+            log('❌ No se encontró emailFieldContainer');
+        }
+        
+        // Mostrar mensaje informativo
+        if (existingInquiryMessage) {
+            existingInquiryMessage.classList.remove('hidden');
+            log('✅ Mensaje de consulta existente mostrado');
+            
+            // Formatear fecha si está disponible
+            if (createdAt && existingInquiryDate) {
+                try {
+                    const date = new Date(createdAt);
+                    const formattedDate = date.toLocaleDateString('es-CO', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    existingInquiryDate.textContent = `Consulta enviada el ${formattedDate}. Te responderemos pronto.`;
+                    log('✅ Fecha formateada y mostrada: ' + formattedDate);
+                } catch (error) {
+                    existingInquiryDate.textContent = 'Ya has enviado una consulta para este paquete anteriormente.';
+                    log('⚠️ Error formateando fecha, usando mensaje por defecto');
+                }
+            }
+        } else {
+            log('❌ No se encontró existingInquiryMessage');
+        }
+        
+        // Mostrar el formulario (sin el campo de email)
+        const inquiryFormContainer = document.getElementById('inquiryFormContainer');
+        if (inquiryFormContainer) {
+            inquiryFormContainer.classList.remove('hidden');
+            log('✅ Formulario de consulta mostrado');
+        } else {
+            log('❌ No se encontró inquiryFormContainer');
+        }
+    }
+    
+    function showInquiryFormWithInfo(announcement, inquiryInfo) {
+        log('📋 Mostrando formulario de consulta con información: ' + JSON.stringify(inquiryInfo));
+        log('🔧 DEBUG: inquiryInfo es null/undefined? ' + (inquiryInfo === null || inquiryInfo === undefined));
+        log('🔧 DEBUG: inquiryInfo.has_existing_email = ' + (inquiryInfo ? inquiryInfo.has_existing_email : 'undefined'));
+        
+        // Verificar si ya existen consultas con email
+        if (inquiryInfo && inquiryInfo.has_existing_email) {
+            log('❌ Ya existe email registrado, ocultando campo de email');
+            log('🔧 DEBUG: Llamando a hideEmailFieldAndShowMessage con fecha: ' + inquiryInfo.latest_inquiry_date);
+            hideEmailFieldAndShowMessage(inquiryInfo.latest_inquiry_date);
+        } else {
+            log('✅ No existe email registrado, mostrando formulario completo');
+            log('🔧 DEBUG: Llamando a showInquiryFormContainer');
+            showInquiryFormContainer();
+        }
+    }
+    
+    function simulateAPIResponse(hasExistingEmail) {
+        log('🧪 SIMULANDO RESPUESTA DEL API - hasExistingEmail: ' + hasExistingEmail);
+        
+        const mockData = {
+            announcement: {
+                customer_name: "JESUS VILLALOBOS",
+                phone_number: "3002596319",
+                guide_number: "29XN",
+                tracking_code: "29XN"
+            },
+            query_type: {
+                is_tracking_code_query: true,
+                should_show_history: true,
+                should_show_inquiry_form: true
+            },
+            inquiry_info: {
+                has_existing_inquiries: hasExistingEmail,
+                has_existing_email: hasExistingEmail,
+                inquiry_count: hasExistingEmail ? 1 : 0,
+                latest_inquiry_date: hasExistingEmail ? "2025-01-15T10:30:00" : null
+            }
+        };
+        
+        document.getElementById('apiResponse').textContent = JSON.stringify(mockData, null, 2);
+        
+        // Simular la lógica del displayResults
+        const queryType = mockData.query_type;
+        const inquiryInfo = mockData.inquiry_info;
+        
+        log('🔧 DEBUG: queryType.should_show_inquiry_form = ' + queryType.should_show_inquiry_form);
+        
+        if (queryType && queryType.should_show_inquiry_form) {
+            log('🔧 DEBUG: Llamando a showInquiryFormWithInfo con inquiryInfo: ' + JSON.stringify(inquiryInfo));
+            showInquiryFormWithInfo(mockData.announcement, inquiryInfo);
+        } else {
+            log('🔧 DEBUG: Ocultando formulario de consulta (no es tracking code)');
+        }
+    }
+    
+    // Inicializar
+    log('🚀 Página de prueba cargada');
+    log('💡 Haz clic en los botones para simular diferentes respuestas del API');
+    </script>
+</body>
+</html>
