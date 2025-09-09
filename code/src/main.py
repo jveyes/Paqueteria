@@ -911,15 +911,22 @@ async def dashboard_page(request: Request, db: Session = Depends(get_db)):
     
     try:
         # Obtener estadísticas reales de la base de datos
-        from .models.package import Package, PackageStatus
         from .models.announcement import PackageAnnouncement
         from .models.customer import Customer
         
-        # Estadísticas de paquetes por estado
-        announced_packages = db.query(Package).filter(Package.status == PackageStatus.ANUNCIADO).count()
-        received_packages = db.query(Package).filter(Package.status == PackageStatus.RECIBIDO).count()
-        delivered_packages = db.query(Package).filter(Package.status == PackageStatus.ENTREGADO).count()
-        total_packages = announced_packages + received_packages + delivered_packages
+        # Estadísticas de anuncios por estado
+        announced_packages = db.query(PackageAnnouncement).filter(
+            and_(PackageAnnouncement.is_active == True, PackageAnnouncement.is_processed == False)
+        ).count()
+        
+        received_packages = db.query(PackageAnnouncement).filter(
+            and_(PackageAnnouncement.is_active == True, PackageAnnouncement.is_processed == True)
+        ).count()
+        
+        delivered_packages = db.query(PackageAnnouncement).filter(
+            and_(PackageAnnouncement.is_active == True, PackageAnnouncement.is_processed == True)
+        ).count()
+        
         total_customers = db.query(Customer).count()
         
         # Estadísticas de anuncios
@@ -931,19 +938,16 @@ async def dashboard_page(request: Request, db: Session = Depends(get_db)):
             PackageAnnouncement.is_processed == True
         ).count()
         
-        # Anuncios recientes (últimos 5)
-        recent_announcements = db.query(PackageAnnouncement).filter(
+        # Anuncios recientes (últimos 10) - ordenados por fecha de anuncio
+        recent_packages = db.query(PackageAnnouncement).filter(
             PackageAnnouncement.is_active == True
-        ).order_by(desc(PackageAnnouncement.announced_at)).limit(5).all()
-        
-        # Paquetes recientes (últimos 5)
-        recent_packages = db.query(Package).order_by(desc(Package.created_at)).limit(5).all()
+        ).order_by(desc(PackageAnnouncement.announced_at)).limit(10).all()
         
         stats = {
             "announced_packages": announced_packages,
             "received_packages": received_packages,
             "delivered_packages": delivered_packages,
-            "total_packages": total_packages,
+            "total_packages": total_announcements,
             "total_customers": total_customers,
             "total_announcements": total_announcements,
             "pending_announcements": pending_announcements,
@@ -953,7 +957,6 @@ async def dashboard_page(request: Request, db: Session = Depends(get_db)):
         # Agregar información del usuario al contexto
         context.update({
             "stats": stats,
-            "recent_announcements": recent_announcements,
             "recent_packages": recent_packages
         })
         
@@ -1081,15 +1084,103 @@ async def packages_page(request: Request):
     
     return templates.TemplateResponse("packages/list.html", context)
 
-@app.get("/packages/detail")
-async def package_detail_page(request: Request):
+@app.get("/packages/{package_id}")
+async def package_detail_page(package_id: str, request: Request, db: Session = Depends(get_db)):
     """Página de detalle del paquete - Solo para usuarios autenticados"""
     context = await get_auth_context_from_request(request)
     
     if not context["is_authenticated"]:
-        return RedirectResponse(url="/auth/login?redirect=/packages/detail", status_code=302)
+        return RedirectResponse(url="/auth/login?redirect=/packages/" + package_id, status_code=302)
     
-    return templates.TemplateResponse("packages/detail.html", context)
+    try:
+        # Obtener el paquete de la base de datos
+        from .models.package import Package
+        
+        package = db.query(Package).filter(Package.id == package_id).first()
+        
+        if not package:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Paquete no encontrado"
+            )
+        
+        context["package"] = package
+        return templates.TemplateResponse("packages/package_detail.html", context)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error al cargar paquete {package_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error al cargar el paquete"
+        )
+
+@app.get("/announcements/{announcement_id}")
+async def announcement_detail_page(announcement_id: str, request: Request, db: Session = Depends(get_db)):
+    """Página de detalle del anuncio - Solo para usuarios autenticados"""
+    context = await get_auth_context_from_request(request)
+    
+    if not context["is_authenticated"]:
+        return RedirectResponse(url="/auth/login?redirect=/announcements/" + announcement_id, status_code=302)
+    
+    try:
+        # Obtener el anuncio de la base de datos
+        from .models.announcement import PackageAnnouncement
+        
+        announcement = db.query(PackageAnnouncement).filter(PackageAnnouncement.id == announcement_id).first()
+        
+        if not announcement:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Anuncio no encontrado"
+            )
+        
+        context["announcement"] = announcement
+        return templates.TemplateResponse("announcements/announcement_detail.html", context)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error al cargar anuncio {announcement_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error al cargar el anuncio"
+        )
+
+@app.get("/announcements/guide/{guide_number}")
+async def announcement_detail_by_guide_page(guide_number: str, request: Request, db: Session = Depends(get_db)):
+    """Página de detalle del anuncio por número de guía - Solo para usuarios autenticados"""
+    context = await get_auth_context_from_request(request)
+    
+    if not context["is_authenticated"]:
+        return RedirectResponse(url="/auth/login?redirect=/announcements/guide/" + guide_number, status_code=302)
+    
+    try:
+        # Obtener el anuncio de la base de datos por número de guía
+        from .models.announcement import PackageAnnouncement
+        
+        announcement = db.query(PackageAnnouncement).filter(PackageAnnouncement.guide_number == guide_number).first()
+        
+        if not announcement:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Anuncio no encontrado"
+            )
+        
+        # Agregar el anuncio al contexto
+        context["announcement"] = announcement
+        
+        return templates.TemplateResponse("announcements/announcement_detail.html", context)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error al cargar el anuncio con guía {guide_number}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error al cargar el anuncio"
+        )
 
 @app.get("/customers-management")
 async def customers_management_page(request: Request):

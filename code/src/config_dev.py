@@ -79,7 +79,7 @@ class Settings(BaseSettings):
     pwa_background_color: str = "#FFFFFF"
     
     class Config:
-        env_file = "env.aws"  # Cambiado a env.aws para usar solo AWS RDS
+        # env_file = "env.aws"  # Comentado porque el archivo no existe
         case_sensitive = False
         extra = "ignore"  # Ignorar variables extra
 

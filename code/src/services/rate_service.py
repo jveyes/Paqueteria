@@ -24,39 +24,99 @@ class RateService:
         storage_days: int = 1,
         delivery_required: bool = True
     ) -> Dict[str, float]:
-        """Calcular costos de un paquete"""
-        # Validar parámetros
-        validate_rate_calculation_params(
-            package_type.value,
-            storage_days,
-            delivery_required
-        )
+        """Calcular costos de un paquete con el nuevo sistema de tarifas"""
+        # Tarifas fijas según el nuevo sistema
+        base_rates = {
+            PackageType.NORMAL: 1500.0,
+            PackageType.EXTRA_DIMENSIONADO: 2000.0
+        }
         
-        # Obtener tarifas activas
-        storage_rate = self._get_active_rate(RateType.STORAGE)
-        delivery_rate = self._get_active_rate(RateType.DELIVERY)
-        package_type_rate = self._get_active_rate(RateType.PACKAGE_TYPE)
+        # Costo base según tipo de paquete
+        base_cost = base_rates.get(package_type, 1500.0)
         
-        # Calcular costos base
-        base_storage = float(storage_rate.base_price) if storage_rate else settings.base_storage_rate
-        base_delivery = float(delivery_rate.base_price) if delivery_rate else settings.base_delivery_rate
-        
-        # Aplicar multiplicadores por tipo de paquete
-        if package_type == PackageType.EXTRA_DIMENSIONADO:
-            multiplier = float(package_type_rate.package_type_multiplier) if package_type_rate else 1.5
-            base_storage *= multiplier
-            base_delivery *= multiplier
+        # Costo de entrega (incluido en la tarifa base)
+        delivery_cost = 0 if delivery_required else 0
         
         # Calcular costos finales
-        storage_cost = base_storage * storage_days
-        delivery_cost = base_delivery if delivery_required else 0
+        storage_cost = base_cost
         total_cost = storage_cost + delivery_cost
         
         return {
             "storage_cost": storage_cost,
             "delivery_cost": delivery_cost,
             "total_cost": total_cost,
-            "currency": settings.currency
+            "currency": "COP"
+        }
+    
+    def calculate_overtime_costs(
+        self,
+        package_type: PackageType,
+        received_at: datetime,
+        current_time: datetime = None
+    ) -> Dict[str, float]:
+        """Calcular costos adicionales por tiempo excedido"""
+        from datetime import timedelta
+        
+        if current_time is None:
+            from ..utils.datetime_utils import get_colombia_now
+            current_time = get_colombia_now()
+        
+        # Calcular tiempo transcurrido desde que se recibió
+        time_elapsed = current_time - received_at
+        
+        # 24 horas de gracia
+        grace_period = timedelta(hours=24)
+        
+        # Si está dentro del período de gracia, no hay costo adicional
+        if time_elapsed <= grace_period:
+            return {
+                "overtime_hours": 0,
+                "overtime_cost": 0.0,
+                "total_overtime_cost": 0.0
+            }
+        
+        # Calcular horas excedidas (cada 24 horas = $1000 adicionales)
+        overtime_hours = time_elapsed - grace_period
+        overtime_periods = int(overtime_hours.total_seconds() / (24 * 3600)) + 1
+        
+        # Costo por período de 24 horas excedidas
+        overtime_cost_per_period = 1000.0
+        total_overtime_cost = overtime_periods * overtime_cost_per_period
+        
+        return {
+            "overtime_hours": overtime_hours.total_seconds() / 3600,  # En horas
+            "overtime_periods": overtime_periods,
+            "overtime_cost_per_period": overtime_cost_per_period,
+            "total_overtime_cost": total_overtime_cost
+        }
+    
+    def calculate_total_package_cost(
+        self,
+        package_type: PackageType,
+        received_at: datetime = None,
+        current_time: datetime = None
+    ) -> Dict[str, float]:
+        """Calcular costo total del paquete incluyendo tiempo excedido"""
+        # Costo base
+        base_costs = self.calculate_package_costs(package_type)
+        
+        # Si no hay fecha de recepción, solo retornar costo base
+        if not received_at:
+            return base_costs
+        
+        # Calcular costos por tiempo excedido
+        overtime_costs = self.calculate_overtime_costs(package_type, received_at, current_time)
+        
+        # Costo total
+        total_cost = base_costs["total_cost"] + overtime_costs["total_overtime_cost"]
+        
+        return {
+            "base_cost": base_costs["total_cost"],
+            "overtime_cost": overtime_costs["total_overtime_cost"],
+            "total_cost": total_cost,
+            "overtime_hours": overtime_costs["overtime_hours"],
+            "overtime_periods": overtime_costs["overtime_periods"],
+            "currency": "COP"
         }
     
     def get_active_rates(self) -> Dict[str, Rate]:

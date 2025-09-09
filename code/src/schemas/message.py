@@ -16,10 +16,16 @@ class MessageType(str, Enum):
 
 class MessageStatus(str, Enum):
     """Estados de mensaje"""
-    PENDING = "pending"
-    IN_PROGRESS = "in_progress"
-    RESOLVED = "resolved"
-    CLOSED = "closed"
+    UNREAD = "UNREAD"
+    PENDING = "PENDING"
+    CLOSED = "CLOSED"
+
+class MessagePriority(str, Enum):
+    """Prioridades de mensaje"""
+    LOW = "low"
+    NORMAL = "normal"
+    HIGH = "high"
+    URGENT = "urgent"
 
 class CustomerInquiryCreate(BaseModel):
     """Schema para crear consulta de cliente"""
@@ -44,6 +50,7 @@ class MessageList(BaseModel):
     content: str
     message_type: MessageType
     status: MessageStatus
+    priority: MessagePriority
     is_read: bool
     created_at: datetime
     package_guide_number: Optional[str]
@@ -62,6 +69,7 @@ class MessageDetail(BaseModel):
     content: str
     message_type: MessageType
     status: MessageStatus
+    priority: MessagePriority
     is_read: bool
     read_at: Optional[datetime]
     read_by_name: Optional[str]
@@ -79,5 +87,5 @@ class MessageStats(BaseModel):
     """Schema para estadísticas de mensajes"""
     total_messages: int
     pending_messages: int
-    resolved_messages: int
+    closed_messages: int
     unread_messages: int
