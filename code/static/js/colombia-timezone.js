@@ -1,0 +1,272 @@
+/**
+ * Utilidades de Zona Horaria de Colombia - PAQUETES EL CLUB v3.1
+ * =============================================================
+ * 
+ * Funciones para formatear fechas y horas en zona horaria de Colombia (America/Bogota)
+ */
+
+// Configuración de zona horaria de Colombia
+const COLOMBIA_TIMEZONE = 'America/Bogota';
+const COLOMBIA_LOCALE = 'es-CO';
+
+/**
+ * Convierte una fecha UTC a zona horaria de Colombia
+ * @param {string|Date} utcDate - Fecha UTC
+ * @returns {Date} Fecha en zona horaria de Colombia
+ */
+function convertUTCToColombia(utcDate) {
+    const date = new Date(utcDate);
+    
+    // Colombia está en UTC-5 (sin horario de verano)
+    const colombiaOffset = -5 * 60; // -5 horas en minutos
+    const utcOffset = date.getTimezoneOffset(); // Offset local en minutos
+    
+    // Calcular la diferencia total
+    const totalOffset = colombiaOffset + utcOffset;
+    
+    // Crear nueva fecha con el offset aplicado
+    const colombiaDate = new Date(date.getTime() + (totalOffset * 60 * 1000));
+    
+    return colombiaDate;
+}
+
+/**
+ * Formatea una fecha en zona horaria de Colombia
+ * @param {string|Date} date - Fecha a formatear
+ * @param {Object} options - Opciones de formateo
+ * @returns {string} Fecha formateada
+ */
+function formatColombiaDate(date, options = {}) {
+    try {
+        // Primero convertir a zona horaria de Colombia
+        const colombiaDate = convertUTCToColombia(date);
+        
+        const defaultOptions = {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        };
+        
+        const finalOptions = { ...defaultOptions, ...options };
+        
+        return colombiaDate.toLocaleString(COLOMBIA_LOCALE, finalOptions);
+    } catch (error) {
+        console.error('Error formateando fecha de Colombia:', error);
+        // Fallback: mostrar la fecha original
+        return new Date(date).toLocaleString(COLOMBIA_LOCALE);
+    }
+}
+
+/**
+ * Formatea solo la fecha (sin hora) en zona horaria de Colombia
+ * @param {string|Date} date - Fecha a formatear
+ * @returns {string} Fecha formateada
+ */
+function formatColombiaDateOnly(date) {
+    return formatColombiaDate(date, {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+}
+
+/**
+ * Formatea solo la hora en zona horaria de Colombia
+ * @param {string|Date} date - Fecha a formatear
+ * @returns {string} Hora formateada
+ */
+function formatColombiaTimeOnly(date) {
+    return formatColombiaDate(date, {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    });
+}
+
+/**
+ * Formatea fecha y hora completa en zona horaria de Colombia
+ * @param {string|Date} date - Fecha a formatear
+ * @returns {string} Fecha y hora formateada
+ */
+function formatColombiaDateTime(date) {
+    return formatColombiaDate(date, {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    });
+}
+
+/**
+ * Formatea fecha y hora en formato dd/mm/yyyy hh:mm {am/pm} en zona horaria de Colombia
+ * @param {string|Date} date - Fecha a formatear
+ * @returns {string} Fecha y hora formateada en formato dd/mm/yyyy hh:mm {am/pm}
+ */
+function formatColombiaDateTimeShort(date) {
+    try {
+        // Primero convertir a zona horaria de Colombia
+        const colombiaDate = convertUTCToColombia(date);
+        
+        // Extraer componentes de la fecha
+        const day = String(colombiaDate.getDate()).padStart(2, '0');
+        const month = String(colombiaDate.getMonth() + 1).padStart(2, '0');
+        const year = colombiaDate.getFullYear();
+        
+        // Formatear hora con AM/PM
+        const hours = colombiaDate.getHours();
+        const minutes = String(colombiaDate.getMinutes()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const displayHours = hours % 12 || 12; // Convertir 0 a 12 para formato 12h
+        const displayMinutes = String(minutes).padStart(2, '0');
+        
+        return `${day}/${month}/${year} ${displayHours}:${displayMinutes} ${ampm}`;
+    } catch (error) {
+        console.error('Error formateando fecha corta de Colombia:', error);
+        // Fallback: mostrar la fecha original
+        return new Date(date).toLocaleString(COLOMBIA_LOCALE);
+    }
+}
+
+/**
+ * Obtiene la fecha actual en zona horaria de Colombia
+ * @returns {Date} Fecha actual en Colombia
+ */
+function getColombiaNow() {
+    const now = new Date();
+    return convertUTCToColombia(now);
+}
+
+/**
+ * Verifica si una fecha está en zona horaria de Colombia
+ * @param {string|Date} date - Fecha a verificar
+ * @returns {boolean} True si está en zona horaria de Colombia
+ */
+function isColombiaTimezone(date) {
+    try {
+        const colombiaDate = convertUTCToColombia(date);
+        const originalDate = new Date(date);
+        return colombiaDate.getTime() !== originalDate.getTime();
+    } catch (error) {
+        return false;
+    }
+}
+
+/**
+ * Función de debug para mostrar información de zona horaria
+ * @param {string|Date} date - Fecha a debuggear
+ */
+function debugTimezone(date) {
+    const originalDate = new Date(date);
+    const colombiaDate = convertUTCToColombia(date);
+    
+    console.log('🌍 Debug de Zona Horaria:');
+    console.log('Fecha original:', originalDate.toISOString());
+    console.log('Fecha UTC:', originalDate.toUTCString());
+    console.log('Fecha local:', originalDate.toLocaleString());
+    console.log('Fecha Colombia:', colombiaDate.toLocaleString(COLOMBIA_LOCALE));
+    console.log('Offset local:', originalDate.getTimezoneOffset(), 'minutos');
+    console.log('Offset Colombia:', -5 * 60, 'minutos');
+}
+
+// Exportar funciones para uso global
+window.ColombiaTimezone = {
+    formatDate: formatColombiaDate,
+    formatDateOnly: formatColombiaDateOnly,
+    formatTimeOnly: formatColombiaTimeOnly,
+    formatDateTime: formatColombiaDateTime,
+    formatDateTimeShort: formatColombiaDateTimeShort,
+    getNow: getColombiaNow,
+    convertUTC: convertUTCToColombia,
+    isColombiaTimezone: isColombiaTimezone,
+    debugTimezone: debugTimezone,
+    TIMEZONE: COLOMBIA_TIMEZONE,
+    LOCALE: COLOMBIA_LOCALE
+};
+
+// Log de inicialización
+console.log('🌍 Utilidades de zona horaria de Colombia cargadas');
+console.log(`📍 Zona horaria: ${COLOMBIA_TIMEZONE}`);
+console.log(`🌐 Locale: ${COLOMBIA_LOCALE}`);
+console.log('🕐 Offset Colombia: UTC-5 (sin horario de verano)');
+# Commit 6 - 2024-01-06
+# Change: 1757423579
+# Commit 10 - 2024-01-10
+# Change: 1757423579
+# Commit 20 - 2024-01-19
+# Change: 1757423580
+# Commit 27 - 2024-01-25
+# Change: 1757423580
+# Commit 32 - 2024-01-30
+# Change: 1757423580
+# Commit 42 - 2024-02-08
+# Change: 1757423581
+# Commit 43 - 2024-02-09
+# Change: 1757423581
+# Commit 48 - 2024-02-14
+# Change: 1757423581
+# Commit 55 - 2024-02-20
+# Change: 1757423582
+# Commit 58 - 2024-02-23
+# Change: 1757423582
+# Commit 71 - 2024-03-06
+# Change: 1757423582
+# Commit 80 - 2024-03-14
+# Change: 1757423583
+# Commit 84 - 2024-03-18
+# Change: 1757423583
+# Commit 87 - 2024-03-20
+# Change: 1757423583
+# Commit 93 - 2024-03-26
+# Change: 1757423583
+# Commit 106 - 2024-04-07
+# Change: 1757423584
+# Commit 115 - 2024-04-15
+# Change: 1757423585
+# Commit 150 - 2024-05-17
+# Change: 1757423586
+# Commit 191 - 2024-06-24
+# Change: 1757423588
+# Commit 208 - 2024-07-09
+# Change: 1757423589
+# Commit 216 - 2024-07-17
+# Change: 1757423590
+# Commit 228 - 2024-07-28
+# Change: 1757423590
+# Commit 233 - 2024-08-01
+# Change: 1757423591
+# Commit 236 - 2024-08-04
+# Change: 1757423591
+# Commit 251 - 2024-08-18
+# Change: 1757423591
+# Commit 259 - 2024-08-25
+# Change: 1757423592
+# Commit 264 - 2024-08-30
+# Change: 1757423592
+# Commit 269 - 2024-09-03
+# Change: 1757423592
+# Commit 293 - 2024-09-25
+# Change: 1757423593
+# Commit 303 - 2024-10-04
+# Change: 1757423594
+# Commit 316 - 2024-10-16
+# Change: 1757423594
+# Commit 342 - 2024-11-09
+# Change: 1757423596
+# Commit 350 - 2024-11-16
+# Change: 1757423596
+# Commit 364 - 2024-11-29
+# Change: 1757423597
+# Commit 385 - 2024-12-19
+# Change: 1757423598
+# Commit 386 - 2024-12-19
+# Change: 1757423598
+# Commit 394 - 2024-12-27
+# Change: 1757423598

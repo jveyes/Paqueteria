@@ -1,0 +1,31 @@
+FROM python:3.11-slim
+
+# Instalar dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpq-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Crear usuario
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# Configurar directorio de trabajo
+WORKDIR /app
+
+# Copiar requirements y instalar dependencias Python
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Crear directorios necesarios
+RUN mkdir -p logs uploads database/backups && \
+    chown -R appuser:appuser /app
+
+# Cambiar a usuario no root
+USER appuser
+
+# El código se monta como volumen en desarrollo
+# No se copia aquí para permitir hot reload
+
+# Comando por defecto (se puede sobrescribir en docker-compose)
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

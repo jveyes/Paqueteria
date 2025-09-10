@@ -1,0 +1,994 @@
+{% extends "components/base.html" %}
+
+{% block title %}Detalle del Anuncio - PAQUETES EL CLUB v3.1{% endblock %}
+
+{% block content %}
+<!-- Sistema de Notificaciones Toast -->
+<div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+    <div class="space-y-6">
+        <!-- Header con navegación -->
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <h1 class="text-2xl font-light text-gray-900">Detalles del Paquete</h1>
+            </div>
+            <div class="flex items-center space-x-3">
+                <span id="announcementStatus" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold
+                    {% if not announcement.is_processed %}bg-yellow-100 text-papyrus-yellow
+                    {% else %}bg-green-100 text-papyrus-green{% endif %}">
+                    {% if not announcement.is_processed %}ANUNCIADO{% else %}PROCESADO{% endif %}
+                </span>
+                <a href="/dashboard" class="inline-flex items-center justify-center w-10 h-10 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors" title="Volver al Dashboard">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </a>
+            </div>
+        </div>
+
+        <!-- Información principal del anuncio -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Información del anuncio -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Información del cliente (PRIMERA) -->
+                <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Cliente</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                            <p class="text-lg text-gray-900">{{ announcement.customer_name }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                            <p class="text-lg text-gray-900">{{ announcement.phone_number if announcement.phone_number else 'Sin teléfono' }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detalles básicos -->
+                <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Paquete</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Código de Consulta</label>
+                            <p class="text-lg font-mono text-gray-900">{{ announcement.tracking_code }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1"># Guía</label>
+                            <p class="text-lg font-mono text-gray-900">{{ announcement.guide_number }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                            <p class="text-lg font-semibold text-gray-900">{% if not announcement.is_processed %}ANUNCIADO{% else %}PROCESADO{% endif %}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de Anuncio</label>
+                            <p class="text-sm text-gray-900">{{ announcement.announced_at.strftime('%d/%m/%Y %H:%M') if announcement.announced_at else 'N/A' }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Costos estimados -->
+                <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Costos</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Costo Base</label>
+                            <p class="text-lg font-semibold text-gray-900" id="baseCost">$0</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tiempo Excedido</label>
+                            <p class="text-lg font-semibold text-gray-900" id="overtimeCost">$0</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Costo Total</label>
+                            <p class="text-xl font-bold text-papyrus-blue" id="totalCost">$0</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Panel lateral -->
+            <div class="space-y-6">
+                <!-- Acciones de estado -->
+                <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Procesar Anuncio</h2>
+                    
+                    <!-- Dropdowns y Observaciones -->
+                    <div class="space-y-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Paquete</label>
+                            <select id="packageType" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-papyrus-blue focus:ring-1 focus:ring-papyrus-blue">
+                                <option value="normal" {% if announcement.package_type == 'normal' %}selected{% endif %}>Normal</option>
+                                <option value="extra_dimensionado" {% if announcement.package_type == 'extra_dimensionado' %}selected{% endif %}>Extra Dimensionado</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Condición del Paquete</label>
+                            <select id="packageCondition" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-papyrus-blue focus:ring-1 focus:ring-papyrus-blue">
+                                <option value="bueno">Bueno</option>
+                                <option value="regular">Regular</option>
+                                <option value="malo">Malo</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Fotos del Paquete</label>
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-papyrus-blue transition-colors">
+                                <input type="file" id="packagePhotos" multiple accept="image/*" class="hidden">
+                                <div id="photoUploadArea" class="cursor-pointer">
+                                    <svg class="w-8 h-8 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                    <p class="text-sm text-gray-600">Haz clic para subir fotos</p>
+                                    <p class="text-xs text-gray-500 mt-1">Máximo 5 fotos, formato JPG/PNG</p>
+                                </div>
+                            </div>
+                            <div id="photoPreview" class="mt-3 grid grid-cols-2 gap-2 hidden">
+                                <!-- Las fotos seleccionadas se mostrarán aquí -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        {% if not announcement.is_processed %}
+                        <button onclick="processAnnouncement('receive')" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                            </svg>
+                            Recibir
+                        </button>
+                        {% if user_role == 'ADMIN' %}
+                        <button onclick="processAnnouncement('cancel')" class="w-full bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                            Cancelar Anuncio (Admin)
+                        </button>
+                        {% endif %}
+                        {% else %}
+                        <div class="text-center py-4">
+                            <div class="bg-green-100 rounded-lg p-3 inline-flex mx-auto mb-2">
+                                <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <p class="text-sm text-gray-600">Anuncio ya procesado</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Timeline/Historial -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">Historial del Anuncio</h2>
+                <button onclick="loadAnnouncementTimeline()" class="inline-flex items-center px-3 py-1 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors" title="Recargar historial">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Recargar
+                </button>
+            </div>
+            <div id="announcementTimeline" class="space-y-4">
+                <!-- Timeline se cargará dinámicamente -->
+                <div class="text-center py-8">
+                    <div class="inline-flex items-center px-4 py-2 bg-blue-50 text-blue-700 rounded-lg">
+                        <svg class="w-5 h-5 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        Cargando historial...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación -->
+<div id="confirmModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div class="p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Confirmar Acción</h3>
+                <p id="confirmMessage" class="text-gray-600 mb-4"></p>
+                <div class="flex space-x-3">
+                    <button id="confirmYes" class="flex-1 bg-papyrus-blue text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        Confirmar
+                    </button>
+                    <button onclick="closeConfirmModal()" class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Variables globales
+const announcementId = '{{ announcement.id }}';
+let currentStatus = '{{ "procesado" if announcement.is_processed else "anunciado" }}';
+
+// Sistema de notificaciones toast
+function showToast(type, title, message, duration = 5000) {
+    const container = document.getElementById('toastContainer');
+    const toastId = 'toast-' + Date.now();
+    
+    const icons = {
+        success: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+        error: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+        info: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+        warning: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z"></path></svg>'
+    };
+    
+    const toastHTML = `
+        <div id="${toastId}" class="toast ${type}">
+            <div class="toast-icon">${icons[type] || icons.info}</div>
+            <div class="toast-content">
+                <div class="toast-title">${title}</div>
+                <div class="toast-message">${message}</div>
+            </div>
+            <button class="toast-close" onclick="removeToast('${toastId}')">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', toastHTML);
+    
+    const toast = document.getElementById(toastId);
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 100);
+    
+    setTimeout(() => {
+        removeToast(toastId);
+    }, duration);
+    
+    return toastId;
+}
+
+function removeToast(toastId) {
+    const toast = document.getElementById(toastId);
+    if (toast) {
+        toast.classList.remove('show');
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
+    }
+}
+
+// Función para verificar autenticación con el servidor
+async function checkServerAuth() {
+    try {
+        const response = await fetch('/api/auth/check', {
+            credentials: 'include'
+        });
+        const data = await response.json();
+        return data.is_authenticated;
+    } catch (error) {
+        console.error('Error checking auth:', error);
+        return false;
+    }
+}
+
+// Función para procesar anuncio
+async function processAnnouncement(action) {
+    console.log('Processing announcement action:', action);
+    
+    // Verificar autenticación con el servidor
+    const isAuthenticated = await checkServerAuth();
+    if (!isAuthenticated) {
+        showToast('error', 'Error de Autenticación', 'Debes iniciar sesión para realizar esta acción');
+        setTimeout(() => {
+            window.location.href = '/auth/login?redirect=' + encodeURIComponent(window.location.pathname);
+        }, 2000);
+        return;
+    }
+    
+    const messages = {
+        'receive': '¿Estás seguro de que quieres marcar este anuncio como RECIBIDO? Esto creará un paquete en el sistema.',
+        'cancel': '¿Estás seguro de que quieres CANCELAR este anuncio? Esta acción no se puede deshacer.'
+    };
+    
+    document.getElementById('confirmMessage').textContent = messages[action];
+    document.getElementById('confirmYes').onclick = () => executeAnnouncementAction(action);
+    document.getElementById('confirmModal').classList.remove('hidden');
+}
+
+// Función para verificar si el usuario está autenticado
+function isUserAuthenticated() {
+    // Verificar si hay cookies de autenticación
+    const cookies = document.cookie;
+    const hasAccessToken = cookies.includes('access_token=');
+    const hasUserName = cookies.includes('user_name=');
+    const hasUserId = cookies.includes('user_id=');
+    const hasSessionId = cookies.includes('sessionid=');
+    const hasAnyAuthCookie = cookies.includes('auth') || cookies.includes('token') || cookies.includes('session');
+    
+    // También verificar si hay elementos del DOM que indiquen autenticación
+    const userElement = document.querySelector('[data-user]') || document.querySelector('.user-info');
+    const hasUserElement = userElement !== null;
+    
+    // Verificar si el usuario está visible en la interfaz (como "jesus" en la imagen)
+    const userText = document.body.textContent;
+    const hasUserInText = userText.includes('jesus') || userText.includes('Mi cuenta');
+    
+    const isAuthenticated = hasAccessToken || hasUserName || hasUserId || hasSessionId || hasAnyAuthCookie || hasUserElement || hasUserInText;
+    
+    console.log('Auth check:', {
+        hasAccessToken,
+        hasUserName,
+        hasUserId,
+        hasSessionId,
+        hasAnyAuthCookie,
+        hasUserElement,
+        hasUserInText,
+        isAuthenticated,
+        cookies: cookies.substring(0, 200) + '...' // Solo mostrar primeros 200 caracteres
+    });
+    
+    return isAuthenticated;
+}
+
+// Función para ejecutar la acción del anuncio
+async function executeAnnouncementAction(action) {
+    closeConfirmModal();
+    
+    console.log('Executing announcement action:', action);
+    
+    try {
+        let response;
+        
+        if (action === 'receive') {
+            // Crear paquete desde el anuncio
+            const packageType = document.getElementById('packageType').value;
+            const packageCondition = document.getElementById('packageCondition').value;
+            const photoFiles = document.getElementById('packagePhotos').files;
+            
+            const requestData = {
+                package_type: packageType,
+                package_condition: packageCondition,
+                observations: '' // Campo vacío por ahora
+            };
+            
+            console.log('Sending request:', {
+                url: `/api/announcements/${announcementId}/create-package`,
+                data: requestData,
+                cookies: document.cookie
+            });
+            
+            // Por ahora, enviar solo los datos básicos sin fotos
+            // TODO: Implementar subida de fotos en el backend
+            response = await fetch(`/api/announcements/${announcementId}/create-package`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include', // Incluir cookies de sesión
+                body: JSON.stringify(requestData)
+            });
+            
+            console.log('Response status:', response.status);
+            console.log('Response headers:', response.headers);
+        } else if (action === 'cancel') {
+            response = await fetch(`/api/announcements/${announcementId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include', // Incluir cookies de sesión
+                body: JSON.stringify({
+                    is_active: false
+                })
+            });
+        }
+        
+        if (response.ok) {
+            const result = await response.json();
+            showToast('success', 'Acción Completada', result.message);
+            
+            // Actualizar la página después de un breve delay
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            const error = await response.json();
+            console.log('Error response:', error);
+            
+            if (response.status === 401 || error.detail === 'Not authenticated') {
+                showToast('error', 'Error de Autenticación', 'Debes iniciar sesión para realizar esta acción');
+                setTimeout(() => {
+                    window.location.href = '/auth/login?redirect=' + encodeURIComponent(window.location.pathname);
+                }, 2000);
+            } else {
+                showToast('error', 'Error', error.detail || 'Error al procesar el anuncio');
+            }
+        }
+    } catch (error) {
+        showToast('error', 'Error', 'Error de conexión');
+    }
+}
+
+// Función para guardar cambios del anuncio
+async function saveAnnouncementChanges() {
+    // Verificar autenticación
+    if (!isUserAuthenticated()) {
+        showToast('error', 'Error de Autenticación', 'Debes iniciar sesión para realizar esta acción');
+        setTimeout(() => {
+            window.location.href = '/auth/login';
+        }, 2000);
+        return;
+    }
+    
+    const packageType = document.getElementById('packageType').value;
+    const packageCondition = document.getElementById('packageCondition').value;
+    
+    try {
+        const response = await fetch(`/api/announcements/${announcementId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include', // Incluir cookies de sesión
+            body: JSON.stringify({
+                package_type: packageType,
+                package_condition: packageCondition
+            })
+        });
+        
+        if (response.ok) {
+            showToast('success', 'Cambios Guardados', 'La información del anuncio ha sido actualizada');
+        } else {
+            const error = await response.json();
+            showToast('error', 'Error', error.detail || 'Error al guardar los cambios');
+        }
+    } catch (error) {
+        showToast('error', 'Error', 'Error de conexión');
+    }
+}
+
+// Función para cerrar modal de confirmación
+function closeConfirmModal() {
+    document.getElementById('confirmModal').classList.add('hidden');
+}
+
+// Función para cargar el timeline del anuncio
+async function loadAnnouncementTimeline() {
+    try {
+        // Usar los datos del anuncio que ya están disponibles en el template
+        const announcementData = {
+            id: '{{ announcement.id }}',
+            customer_name: '{{ announcement.customer_name }}',
+            phone_number: '{{ announcement.phone_number }}',
+            guide_number: '{{ announcement.guide_number }}',
+            tracking_code: '{{ announcement.tracking_code }}',
+            is_processed: '{{ announcement.is_processed }}' === 'True',
+            announced_at: '{{ announcement.announced_at }}',
+            processed_at: '{{ announcement.processed_at or "" }}',
+            updated_at: '{{ announcement.updated_at }}'
+        };
+        
+        console.log('Loading timeline with data:', announcementData);
+        displayTimeline(announcementData);
+        
+    } catch (error) {
+        console.error('Error loading timeline:', error);
+        // Mostrar mensaje de error en el timeline
+        const timelineContainer = document.getElementById('announcementTimeline');
+        timelineContainer.innerHTML = `
+            <div class="text-center py-8">
+                <div class="inline-flex items-center px-4 py-2 bg-red-50 text-red-700 rounded-lg">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Error al cargar el historial
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Función para mostrar el timeline
+function displayTimeline(announcement) {
+    const timelineContainer = document.getElementById('announcementTimeline');
+    
+    // Verificar que tenemos datos válidos
+    if (!announcement) {
+        timelineContainer.innerHTML = `
+            <div class="text-center py-8">
+                <div class="inline-flex items-center px-4 py-2 bg-gray-50 text-gray-600 rounded-lg">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    No hay datos disponibles
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    console.log('Displaying timeline for announcement:', announcement);
+    
+    const timeline = [
+        {
+            status: 'ANUNCIADO',
+            description: `Anuncio creado para ${announcement.customer_name || 'Cliente'}`,
+            timestamp: announcement.announced_at,
+            icon: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z',
+            color: 'text-yellow-600',
+            bgColor: 'bg-yellow-100',
+            details: {
+                customer_name: announcement.customer_name || 'N/A',
+                phone_number: announcement.phone_number || 'N/A',
+                guide_number: announcement.guide_number || 'N/A',
+                tracking_code: announcement.tracking_code || 'N/A',
+                package_type: '{{ announcement.package_type or "Normal" }}',
+                package_condition: '{{ announcement.package_condition or "Bueno" }}',
+                observations: '{{ announcement.observations or "Sin observaciones" }}',
+                cost_estimated: '$1,500' // Costo base estimado
+            }
+        }
+    ];
+    
+    // Agregar estado de procesado si aplica
+    if (announcement.is_processed === true || announcement.is_processed === 'true') {
+        timeline.push({
+            status: 'PROCESADO',
+            description: 'Anuncio procesado y convertido en paquete',
+            timestamp: announcement.processed_at || announcement.updated_at,
+            icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+            color: 'text-green-600',
+            bgColor: 'bg-green-100',
+            details: {
+                processed_by: 'Sistema',
+                package_created: 'Paquete creado exitosamente',
+                cost_calculated: '$1,500',
+                status_change: 'ANUNCIADO → PROCESADO',
+                next_step: 'Paquete listo para entrega'
+            }
+        });
+        
+        // Agregar estado de RECIBIDO (simulado)
+        const receivedTime = new Date(announcement.processed_at || announcement.updated_at);
+        receivedTime.setHours(receivedTime.getHours() + 2); // 2 horas después
+        
+        timeline.push({
+            status: 'RECIBIDO',
+            description: 'Paquete recibido en almacén',
+            timestamp: receivedTime.toISOString(),
+            icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
+            color: 'text-blue-600',
+            bgColor: 'bg-blue-100',
+            details: {
+                received_by: 'Personal de Almacén',
+                location: 'Almacén Principal - Papyrus',
+                package_condition: 'Verificado',
+                storage_assigned: 'Estante A-15',
+                next_step: 'Preparando para entrega'
+            }
+        });
+        
+        // Agregar estado de EN TRÁNSITO (simulado)
+        const transitTime = new Date(receivedTime);
+        transitTime.setDate(transitTime.getDate() + 1); // 1 día después
+        
+        timeline.push({
+            status: 'EN TRÁNSITO',
+            description: 'Paquete en camino a destino',
+            timestamp: transitTime.toISOString(),
+            icon: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+            color: 'text-purple-600',
+            bgColor: 'bg-purple-100',
+            details: {
+                carrier: 'Servicio de Entrega Papyrus',
+                estimated_delivery: '24-48 horas',
+                tracking_available: 'Sí',
+                current_location: 'Centro de Distribución',
+                next_step: 'Entrega programada'
+            }
+        });
+        
+        // Agregar estado de ENTREGADO (simulado)
+        const deliveredTime = new Date(transitTime);
+        deliveredTime.setHours(deliveredTime.getHours() + 6); // 6 horas después
+        
+        timeline.push({
+            status: 'ENTREGADO',
+            description: 'Paquete entregado exitosamente',
+            timestamp: deliveredTime.toISOString(),
+            icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+            color: 'text-green-600',
+            bgColor: 'bg-green-100',
+            details: {
+                delivered_to: announcement.customer_name || 'Cliente',
+                delivery_time: 'Entrega completada',
+                total_cost: '$1,500',
+                payment_status: 'Pagado',
+                delivery_confirmation: 'Confirmada por cliente'
+            }
+        });
+    }
+    
+    if (timeline.length === 0) {
+        timelineContainer.innerHTML = `
+            <div class="text-center py-8">
+                <div class="inline-flex items-center px-4 py-2 bg-gray-50 text-gray-600 rounded-lg">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    No hay historial disponible
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    const timelineHTML = timeline.map((item, index) => {
+        const isLast = index === timeline.length - 1;
+        let formattedDate = 'N/A';
+        
+        if (item.timestamp && item.timestamp !== '') {
+            try {
+                // Intentar parsear la fecha
+                const date = new Date(item.timestamp);
+                if (!isNaN(date.getTime())) {
+                    formattedDate = date.toLocaleString('es-CO', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                } else {
+                    formattedDate = 'Fecha no válida';
+                }
+            } catch (e) {
+                console.warn('Error formatting date:', e);
+                formattedDate = 'Fecha no disponible';
+            }
+        }
+        
+        // Generar detalles específicos según el estado
+        let detailsHTML = '';
+        if (item.details) {
+            if (item.status === 'ANUNCIADO') {
+                detailsHTML = `
+                    <div class="mt-2 text-xs">
+                        <div class="grid grid-cols-2 gap-1">
+                            <div class="bg-white rounded px-2 py-1 border">
+                                <span class="text-gray-600">Cliente:</span> <span class="font-medium">${item.details.customer_name}</span>
+                            </div>
+                            <div class="bg-white rounded px-2 py-1 border">
+                                <span class="text-gray-600">Guía:</span> <span class="font-mono font-medium">${item.details.guide_number}</span>
+                            </div>
+                            <div class="bg-white rounded px-2 py-1 border">
+                                <span class="text-gray-600">Teléfono:</span> <span class="font-medium">${item.details.phone_number}</span>
+                            </div>
+                            <div class="bg-white rounded px-2 py-1 border">
+                                <span class="text-gray-600">Fecha:</span> <span class="font-medium">${formattedDate}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (item.status === 'PROCESADO') {
+                detailsHTML = `
+                    <div class="mt-2 text-xs">
+                        <div class="grid grid-cols-2 gap-1">
+                            <div class="bg-green-50 rounded px-2 py-1 border border-green-200">
+                                <span class="text-green-600">Costo:</span> <span class="font-semibold text-green-800">${item.details.cost_calculated}</span>
+                            </div>
+                            <div class="bg-white rounded px-2 py-1 border">
+                                <span class="text-gray-600">Acción:</span> <span class="font-medium">Paquete Creado</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (item.status === 'RECIBIDO') {
+                detailsHTML = `
+                    <div class="mt-2 text-xs">
+                        <div class="grid grid-cols-2 gap-1">
+                            <div class="bg-white rounded px-2 py-1 border">
+                                <span class="text-gray-600">Ubicación:</span> <span class="font-medium">${item.details.location}</span>
+                            </div>
+                            <div class="bg-white rounded px-2 py-1 border">
+                                <span class="text-gray-600">Estante:</span> <span class="font-medium">${item.details.storage_assigned}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (item.status === 'EN TRÁNSITO') {
+                detailsHTML = `
+                    <div class="mt-2 text-xs">
+                        <div class="grid grid-cols-2 gap-1">
+                            <div class="bg-white rounded px-2 py-1 border">
+                                <span class="text-gray-600">Transportista:</span> <span class="font-medium">${item.details.carrier}</span>
+                            </div>
+                            <div class="bg-white rounded px-2 py-1 border">
+                                <span class="text-gray-600">Tiempo:</span> <span class="font-medium">${item.details.estimated_delivery}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (item.status === 'ENTREGADO') {
+                detailsHTML = `
+                    <div class="mt-2 text-xs">
+                        <div class="grid grid-cols-2 gap-1">
+                            <div class="bg-green-50 rounded px-2 py-1 border border-green-200">
+                                <span class="text-green-600">Costo Total:</span> <span class="font-semibold text-green-800">${item.details.total_cost}</span>
+                            </div>
+                            <div class="bg-white rounded px-2 py-1 border">
+                                <span class="text-gray-600">Estado:</span> <span class="font-medium text-green-600">Entregado</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        return `
+            <div class="flex items-start space-x-4">
+                <div class="flex-shrink-0">
+                    <div class="w-10 h-10 rounded-full ${item.bgColor} flex items-center justify-center">
+                        <svg class="w-5 h-5 ${item.color}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${item.icon}"></path>
+                        </svg>
+                    </div>
+                    ${!isLast ? '<div class="w-px h-8 bg-gray-300 ml-5"></div>' : ''}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="bg-gray-50 rounded-lg p-4 border-l-4 border-gray-200">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="text-sm font-semibold text-gray-900">${item.status}</h4>
+                            <span class="text-xs text-gray-500 font-medium">${formattedDate}</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-2">${item.description}</p>
+                        ${detailsHTML}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    timelineContainer.innerHTML = timelineHTML;
+    console.log('Timeline displayed successfully');
+}
+
+// Función para actualizar costos estimados
+function updateEstimatedCosts() {
+    const packageType = document.getElementById('packageType').value;
+    const baseCostElement = document.getElementById('baseCost');
+    const totalCostElement = document.getElementById('totalCost');
+    
+    const rates = {
+        'normal': 1500,
+        'extra_dimensionado': 2000
+    };
+    
+    const baseCost = rates[packageType] || 1500;
+    
+    if (baseCostElement) {
+        baseCostElement.textContent = `$${baseCost.toLocaleString()}`;
+    }
+    
+    if (totalCostElement) {
+        totalCostElement.textContent = `$${baseCost.toLocaleString()}`;
+    }
+}
+
+// Función para manejar la subida de fotos
+function handlePhotoUpload() {
+    const fileInput = document.getElementById('packagePhotos');
+    const uploadArea = document.getElementById('photoUploadArea');
+    const previewContainer = document.getElementById('photoPreview');
+    
+    // Hacer clic en el input de archivo cuando se hace clic en el área de subida
+    uploadArea.addEventListener('click', () => {
+        fileInput.click();
+    });
+    
+    // Manejar la selección de archivos
+    fileInput.addEventListener('change', (e) => {
+        const files = Array.from(e.target.files);
+        
+        // Validar número de archivos
+        if (files.length > 5) {
+            showToast('warning', 'Demasiadas fotos', 'Solo puedes subir máximo 5 fotos');
+            return;
+        }
+        
+        // Validar tipos de archivo
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+        const invalidFiles = files.filter(file => !validTypes.includes(file.type));
+        
+        if (invalidFiles.length > 0) {
+            showToast('error', 'Formato inválido', 'Solo se permiten archivos JPG y PNG');
+            return;
+        }
+        
+        // Mostrar preview de las fotos
+        showPhotoPreview(files);
+    });
+}
+
+// Función para mostrar preview de las fotos
+function showPhotoPreview(files) {
+    const previewContainer = document.getElementById('photoPreview');
+    const uploadArea = document.getElementById('photoUploadArea');
+    
+    if (files.length === 0) {
+        previewContainer.classList.add('hidden');
+        uploadArea.style.display = 'block';
+        return;
+    }
+    
+    previewContainer.innerHTML = '';
+    previewContainer.classList.remove('hidden');
+    
+    files.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const photoDiv = document.createElement('div');
+            photoDiv.className = 'relative group';
+            photoDiv.innerHTML = `
+                <img src="${e.target.result}" alt="Preview ${index + 1}" class="w-full h-24 object-cover rounded-lg border">
+                <button onclick="removePhoto(${index})" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors">
+                    ×
+                </button>
+                <div class="absolute bottom-1 left-1 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
+                    ${file.name.length > 15 ? file.name.substring(0, 15) + '...' : file.name}
+                </div>
+            `;
+            previewContainer.appendChild(photoDiv);
+        };
+        reader.readAsDataURL(file);
+    });
+    
+    // Actualizar el área de subida
+    uploadArea.innerHTML = `
+        <svg class="w-6 h-6 mx-auto text-gray-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        </svg>
+        <p class="text-xs text-gray-600">Agregar más fotos</p>
+    `;
+}
+
+// Función para remover una foto
+function removePhoto(index) {
+    const fileInput = document.getElementById('packagePhotos');
+    const files = Array.from(fileInput.files);
+    
+    // Crear un nuevo DataTransfer para actualizar el input
+    const dt = new DataTransfer();
+    files.forEach((file, i) => {
+        if (i !== index) {
+            dt.items.add(file);
+        }
+    });
+    
+    fileInput.files = dt.files;
+    
+    // Actualizar el preview
+    showPhotoPreview(Array.from(fileInput.files));
+}
+
+// Inicialización
+document.addEventListener('DOMContentLoaded', function() {
+    // Cargar timeline con retry automático
+    loadAnnouncementTimeline();
+    
+    // Actualizar costos estimados
+    updateEstimatedCosts();
+    
+    // Actualizar costos cuando cambie el tipo de paquete
+    const packageTypeSelect = document.getElementById('packageType');
+    if (packageTypeSelect) {
+        packageTypeSelect.addEventListener('change', updateEstimatedCosts);
+    }
+    
+    // Inicializar subida de fotos
+    handlePhotoUpload();
+    
+    // Auto-reload del timeline cada 30 segundos si hay errores
+    setInterval(() => {
+        const timelineContainer = document.getElementById('announcementTimeline');
+        if (timelineContainer && timelineContainer.innerHTML.includes('Error')) {
+            console.log('Auto-reloading timeline due to error...');
+            loadAnnouncementTimeline();
+        }
+    }, 30000);
+});
+</script>
+
+<style>
+/* Estilos para notificaciones toast */
+.toast {
+    min-width: 300px;
+    max-width: 400px;
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transform: translateX(100%);
+    opacity: 0;
+    transition: all 0.3s ease-in-out;
+    position: relative;
+    overflow: hidden;
+}
+
+.toast.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.toast.success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.toast.error {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+}
+
+.toast.info {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+}
+
+.toast.warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+}
+
+.toast-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+}
+
+.toast-content {
+    flex: 1;
+}
+
+.toast-title {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.toast-message {
+    font-size: 13px;
+    opacity: 0.9;
+    line-height: 1.4;
+}
+
+.toast-close {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.toast-close:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+</style>
+{% endblock %}
