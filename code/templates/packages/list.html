@@ -85,7 +85,12 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm font-medium text-gray-900">{{ package.customer_name }}</div>
-                            <div class="text-sm text-gray-500">{{ package.customer_phone }}</div>
+                            <div class="text-sm text-gray-500">
+                                <span data-phone="{{ package.customer_phone }}" 
+                                      data-message="Consulta sobre paquete {{ package.tracking_number or package.guide_number }}">
+                                    {{ package.customer_phone }}
+                                </span>
+                            </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             {% if package.status == 'pending' %}

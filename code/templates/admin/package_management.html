@@ -206,7 +206,7 @@
                         <div class="text-sm text-gray-900">${package.customer_name}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">${package.customer_phone}</div>
+                        <div class="text-sm text-gray-900">${createPhoneLinksHTML(package.customer_phone, `Consulta sobre paquete ${package.tracking_number || package.guide_number}`)}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         ${statusBadge}
@@ -389,7 +389,7 @@
                             <span class="font-medium">Cliente:</span> ${data.package.customer_name}
                         </div>
                         <div>
-                            <span class="font-medium">Teléfono:</span> ${data.package.customer_phone}
+                            <span class="font-medium">Teléfono:</span> ${createPhoneLinksHTML(data.package.customer_phone, `Consulta sobre paquete ${data.package.tracking_number || data.package.guide_number}`)}
                         </div>
                         <div>
                             <span class="font-medium">Estado:</span> ${getStatusBadge(data.package.status)}

@@ -63,7 +63,7 @@
             const payload = {
                 customer_name: document.getElementById('customerName').value,
                 guide_number: document.getElementById('guideNumber').value,
-                phone_number: document.getElementById('phoneNumber').value
+                customer_phone: document.getElementById('phoneNumber').value
             };
             
             try {
@@ -105,7 +105,7 @@
                             },
                             body: JSON.stringify({
                                 customer_name: data.customer_name,
-                                phone_number: data.phone_number,
+                                customer_phone: data.customer_phone,
                                 guide_number: data.guide_number,
                                 tracking_code: data.tracking_code
                             })

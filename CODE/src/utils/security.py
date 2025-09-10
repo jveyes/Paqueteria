@@ -47,7 +47,7 @@ def sanitize_text(text: str) -> str:
 
 def validate_phone_number(phone: str) -> str:
     """
-    Valida y limpia número de teléfono colombiano
+    Valida y limpia número de teléfono internacional
     
     Args:
         phone: Número de teléfono a validar
@@ -61,20 +61,35 @@ def validate_phone_number(phone: str) -> str:
     if not phone:
         raise ValueError('El teléfono es requerido')
     
-    # Remover todos los caracteres no numéricos
+    # Verificar que no tenga espacios
+    if ' ' in phone:
+        raise ValueError('Los números de teléfono no pueden contener espacios')
+    
+    # Verificar que solo contenga dígitos y +
+    if not re.match(r'^[\d+]+$', phone):
+        raise ValueError('Solo se permiten dígitos y el símbolo +')
+    
+    # Caso 1: Número con código de país (+xxx...)
+    if phone.startswith('+'):
+        # Verificar longitud máxima (15 caracteres)
+        if len(phone) > 15:
+            raise ValueError('Número internacional demasiado largo (máximo 15 caracteres)')
+        
+        # Verificar que tenga al menos +1xx (mínimo 4 caracteres)
+        if len(phone) < 4:
+            raise ValueError('Número internacional demasiado corto')
+        
+        return phone
+    
+    # Caso 2: Número sin código de país
     digits = re.sub(r'[^\d]', '', phone)
     
-    # Validar longitud mínima
+    # Verificar longitud
+    if len(digits) > 10:
+        raise ValueError('Números sin código de país no pueden tener más de 10 dígitos')
+    
     if len(digits) < 10:
-        raise ValueError('El teléfono debe tener al menos 10 dígitos')
-    
-    # Validar longitud máxima
-    if len(digits) > 15:
-        raise ValueError('El teléfono no puede exceder 15 dígitos')
-    
-    # Validar que sea un número colombiano válido
-    if not digits.startswith(('3', '6')):
-        raise ValueError('El teléfono debe ser un número colombiano válido (celular o fijo)')
+        raise ValueError('Números sin código de país deben tener exactamente 10 dígitos')
     
     return digits
 

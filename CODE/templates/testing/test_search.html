@@ -46,7 +46,7 @@
                         <div class="result success">
                             <h3>Paquete encontrado:</h3>
                             <p><strong>Cliente:</strong> ${data.announcement.customer_name}</p>
-                            <p><strong>Teléfono:</strong> ${data.announcement.phone_number}</p>
+                            <p><strong>Teléfono:</strong> ${createWhatsAppLinkHTML(data.announcement.customer_phone, `Consulta sobre paquete ${data.announcement.tracking_code || data.announcement.guide_number}`)}</p>
                             <p><strong>Número de guía:</strong> ${data.announcement.guide_number}</p>
                             <p><strong>Código de tracking:</strong> ${data.announcement.tracking_code}</p>
                             <p><strong>Estado actual:</strong> ${data.current_status}</p>

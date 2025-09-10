@@ -1,7 +1,7 @@
 {% extends "components/base.html" %}
 
 {% block title %}Consultar Paquetes - PAQUETES EL CLUB v3.1{% endblock %}
-<!-- VERSION: 2025-09-07-12:50 - HOT RELOAD TEST -->
+<!-- VERSION: 2025-09-09-16:00 - CUSTOMER_PHONE VALIDATION -->
 
 {% block content %}
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
@@ -59,7 +59,7 @@
     </div>
 
     <!-- SECCIÓN 1: Historial del Paquete -->
-    <div id="searchResults" class="mt-8 hidden">
+    <div id="searchResults" class="mt-8 hidden" data-section="package-history">
         <div class="flex justify-center">
             <div class="max-w-md w-full">
                 <div class="bg-white rounded-xl shadow-lg border border-gray-100">
@@ -180,16 +180,13 @@
                             
                             <!-- Campo de mensaje -->
                             <div>
-                                <div class="input-with-icon">
-                                    <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                                    </svg>
+                                <div>
                                     <textarea id="content" 
                                               name="content" 
                                               required
                                               minlength="3"
                                               rows="4"
-                                              class="w-full px-0 py-3 border-0 border-b-2 border-gray-200 focus:border-blue-600 focus:ring-0 bg-transparent transition-colors resize-none"
+                                              class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-600 focus:ring-0 bg-transparent transition-colors resize-none"
                                               placeholder="Escribe tu consulta sobre el paquete..."></textarea>
                                 </div>
                             </div>
@@ -242,9 +239,6 @@
                                 <button type="submit" 
                                         id="submitInquiryButton"
                                         class="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                                    <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                                    </svg>
                                     Enviar Consulta
                                 </button>
                             </div>
@@ -388,16 +382,13 @@
                         <form id="inquiryForm" class="space-y-8">
                                                         <!-- Campo de mensaje -->
                                                         <div class="space-y-2">
-                                                            <div class="input-with-icon">
-                                                                <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                                                                </svg>
+                                                            <div>
                                                                 <textarea id="content" 
                                                                           name="content" 
                                                                           required
                                                                           minlength="3"
                                                                           rows="4"
-                                                                          class="w-full px-0 py-4 border-0 border-b-2 border-gray-200 focus:border-blue-600 focus:ring-0 bg-transparent transition-all duration-200 text-gray-900 placeholder-gray-400 resize-none"
+                                                                          class="w-full px-4 py-4 border-2 border-gray-200 rounded-lg focus:border-blue-600 focus:ring-0 bg-transparent transition-all duration-200 text-gray-900 placeholder-gray-400 resize-none"
                                                                           placeholder="Escribe tu consulta sobre el paquete..."></textarea>
                                                             </div>
                                                         </div>
@@ -451,27 +442,10 @@
                                 <button type="submit" 
                                         id="submitInquiryButton"
                                         class="inline-flex items-center px-10 py-4 border border-transparent text-base font-semibold rounded-xl shadow-lg text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 transform hover:scale-105">
-                                    <svg class="-ml-1 mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                                    </svg>
                                     <span id="submitInquiryButtonText">Enviar Consulta</span>
                                 </button>
                             </div>
                         </form>
-
-                        <!-- Mensaje de éxito -->
-                        <div id="inquirySuccess" class="hidden mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                            <div class="flex">
-                                <div class="flex-shrink-0">
-                                    <svg class="h-5 w-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                </div>
-                                <div class="ml-3">
-                                    <p class="text-sm text-green-700">Tu consulta ha sido enviada exitosamente. Te responderemos pronto.</p>
-                                </div>
-                            </div>
-                        </div>
 
                         <!-- Mensaje de error -->
                         <div id="inquiryError" class="hidden mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -517,11 +491,11 @@
     document.addEventListener('DOMContentLoaded', function() {
         console.log('DOM cargado, configurando event listener...');
         
-        // Focus automático en el campo de búsqueda al cargar la página
-        const searchQueryField = document.getElementById('searchQuery');
-        if (searchQueryField) {
-            searchQueryField.focus();
-        }
+        // Focus automático desactivado - el usuario debe hacer click manualmente
+        // const searchQueryField = document.getElementById('searchQuery');
+        // if (searchQueryField) {
+        //     searchQueryField.focus();
+        // }
         
         const searchForm = document.getElementById('searchForm');
         if (searchForm) {
@@ -626,7 +600,11 @@
         
         // SECCIÓN 1: Mostrar Historial del Paquete
         const searchResults = document.getElementById('searchResults');
-        if (searchResults) searchResults.classList.remove('hidden');
+        if (searchResults) {
+            searchResults.classList.remove('hidden');
+            // Agregar clase para animación de entrada
+            searchResults.classList.add('animate-fade-in');
+        }
         
         // Llenar información del paquete
         const customerName = document.getElementById('customerName');
@@ -634,8 +612,30 @@
         const guideNumber = document.getElementById('guideNumber');
         const trackingCode = document.getElementById('trackingCode');
         
+        // Debug logs para customer_phone
+        console.log('🔧 DEBUG: data.announcement:', data.announcement);
+        console.log('🔧 DEBUG: data.announcement.customer_phone:', data.announcement.customer_phone);
+        console.log('🔧 DEBUG: typeof data.announcement.customer_phone:', typeof data.announcement.customer_phone);
+        console.log('🔧 DEBUG: customerPhone element:', customerPhone);
+        
         if (customerName) customerName.textContent = data.announcement.customer_name;
-        if (customerPhone) customerPhone.textContent = data.announcement.phone_number;
+        if (customerPhone) {
+            console.log('🔧 DEBUG: Setting customerPhone with WhatsApp link:', data.announcement.customer_phone);
+            
+            // Validación robusta para customer_phone y crear enlace de WhatsApp
+            const phoneValue = data.announcement.customer_phone;
+            if (phoneValue !== undefined && phoneValue !== null && phoneValue !== 'undefined') {
+                // Crear enlace de WhatsApp con mensaje personalizado
+                const message = `Hola, tengo una consulta sobre mi paquete ${data.announcement.tracking_code || data.announcement.guide_number}`;
+                customerPhone.innerHTML = createWhatsAppLinkHTML(phoneValue, message);
+                console.log('🔧 DEBUG: customerPhone updated with WhatsApp link');
+            } else {
+                console.error('❌ ERROR: customer_phone es undefined, null o string "undefined"');
+                console.error('❌ Valor recibido:', phoneValue);
+                console.error('❌ Tipo:', typeof phoneValue);
+                customerPhone.innerHTML = '<span class="text-sm text-gray-500">No disponible</span>';
+            }
+        }
         if (guideNumber) guideNumber.textContent = data.announcement.guide_number;
         if (trackingCode) trackingCode.textContent = data.announcement.tracking_code;
         
@@ -669,12 +669,12 @@
             }
         }
         
-        // SECCIÓN 2: Mostrar Preguntas y Respuestas (solo para tracking code)
+        // SECCIÓN 2: Mostrar Preguntas y Respuestas (solo para tracking code y solo si hay mensajes)
         const conversationHistory = document.getElementById('conversationHistory');
         if (conversationHistory) {
             if (queryType && queryType.should_show_history) {
-                // Solo mostrar y cargar conversaciones si es búsqueda por tracking code
-                conversationHistory.classList.remove('hidden');
+                // Solo mostrar conversaciones si es búsqueda por tracking code
+                // La visibilidad se controlará dentro de displayConversationHistory
                 displayConversationHistory(data.announcement.tracking_code);
             } else {
                 // Ocultar conversaciones si es búsqueda por número de guía
@@ -695,12 +695,26 @@
             }
         }
         
-        // Scroll a los resultados
-        if (searchResults) {
-            searchResults.scrollIntoView({ 
-                behavior: 'smooth' 
-            });
-        }
+        // Scroll automático desactivado - el usuario puede navegar manualmente
+        // if (searchResults) {
+        //     // Esperar un momento para que se complete la renderización
+        //     setTimeout(() => {
+        //         // Scroll suave a la sección
+        //         searchResults.scrollIntoView({ 
+        //             behavior: 'smooth',
+        //             block: 'start',
+        //             inline: 'nearest'
+        //         });
+        //         
+        //         // Agregar efecto visual para destacar la sección
+        //         searchResults.classList.add('package-history-highlight');
+        //         
+        //         // Remover el efecto después de 2 segundos
+        //         setTimeout(() => {
+        //             searchResults.classList.remove('package-history-highlight');
+        //         }, 2000);
+        //     }, 200);
+        // }
     }
 
     function displayCurrentStatus(status) {
@@ -819,8 +833,11 @@
 
     function displayConversationHistory(trackingCode) {
         console.log('🚀 INICIANDO displayConversationHistory para tracking:', trackingCode);
+        console.log('🔍 Estado inicial de conversationHistory:', document.getElementById('conversationHistory')?.classList.toString());
         
         const conversationContainer = document.getElementById('conversationContainer');
+        const conversationHistory = document.getElementById('conversationHistory');
+        
         if (!conversationContainer) {
             console.log('❌ No se encontró conversationContainer');
             return;
@@ -840,17 +857,23 @@
             })
             .then(messages => {
                 console.log('✅ Mensajes recibidos:', messages);
+                console.log('🔍 Tipo de messages:', typeof messages);
+                console.log('🔍 Es array:', Array.isArray(messages));
+                console.log('🔍 Longitud:', messages ? messages.length : 'undefined');
                 
-                if (!messages || messages.length === 0) {
-                    conversationContainer.innerHTML = `
-                        <div class="text-center py-8 text-gray-500">
-                            <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                            </svg>
-                            <p class="text-sm">No hay consultas registradas para este paquete</p>
-                        </div>
-                    `;
+                if (!messages || !Array.isArray(messages) || messages.length === 0) {
+                    // Ocultar la sección completa si no hay mensajes
+                    if (conversationHistory) {
+                        conversationHistory.classList.add('hidden');
+                        console.log('✅ Sección de conversaciones ocultada - no hay mensajes');
+                    }
                     return;
+                }
+                
+                // Mostrar la sección solo si hay mensajes
+                if (conversationHistory) {
+                    conversationHistory.classList.remove('hidden');
+                    console.log('✅ Sección de conversaciones mostrada - hay mensajes');
                 }
                 
                 // Ordenar mensajes por fecha (más antiguos primero para mostrar conversación cronológica)
@@ -868,8 +891,21 @@
                     inquiryDiv.className = 'bg-blue-50 rounded-lg border border-blue-200 p-4';
                     
                     // Estado de la pregunta
-                    const statusText = message.status === 'PENDING' ? 'Pendiente' : 'Resuelto';
-                    const statusClass = message.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800';
+                    let statusText, statusClass;
+                    switch(message.status) {
+                        case 'UNREAD':
+                        case 'PENDING':
+                            statusText = 'PENDIENTE';
+                            statusClass = 'bg-yellow-100 text-yellow-800';
+                            break;
+                        case 'CLOSED':
+                            statusText = 'RESUELTO';
+                            statusClass = 'bg-green-100 text-green-800';
+                            break;
+                        default:
+                            statusText = 'PENDIENTE';
+                            statusClass = 'bg-yellow-100 text-yellow-800';
+                    }
                     
                     // Formatear fecha con formato dd/mm/yyyy hh:mm {am/pm}
                     const inquiryDate = formatDateShort(message.created_at);
@@ -878,9 +914,7 @@
                         <div class="flex items-start justify-between mb-3">
                             <div class="flex items-center space-x-3">
                                 <div class="flex-shrink-0">
-                                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                                    </svg>
+                                    <!-- Icono eliminado -->
                                 </div>
                                 <div>
                                     <h4 class="text-sm font-medium text-gray-900">${message.customer_name || 'Cliente'}</h4>
@@ -940,6 +974,11 @@
             })
             .catch(error => {
                 console.error('❌ Error obteniendo mensajes:', error);
+                // En caso de error, ocultar la sección
+                if (conversationHistory) {
+                    conversationHistory.classList.add('hidden');
+                    console.log('✅ Sección de conversaciones ocultada - error al cargar mensajes');
+                }
                 conversationContainer.innerHTML = `
                     <div class="text-center py-8 text-red-500">
                         <svg class="mx-auto h-12 w-12 text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1021,7 +1060,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
                         </svg>
                         <span class="font-medium">Teléfono:</span>
-                        <span class="ml-2">${details.phone_number}</span>
+                        <span class="ml-2">${createWhatsAppLinkHTML(details.customer_phone, `Consulta sobre paquete ${details.guide_number || details.tracking_code}`)}</span>
                     </div>
                 `;
                 break;
@@ -1197,16 +1236,16 @@
             .then(data => {
                 console.log('✅ Datos de verificación de email:', data);
                 
-                // Verificar si existe un mensaje PENDING para este tracking code
+                // Verificar si existe un mensaje PENDING o UNREAD para este tracking code
                 if (data.exists && data.count > 0) {
-                    // Verificar si hay algún mensaje con estado PENDING
-                    if (data.has_pending) {
-                        console.log('🚫 MENSAJE PENDING ENCONTRADO - No se puede enviar nueva consulta');
+                    // Verificar si hay algún mensaje con estado PENDING o UNREAD
+                    if (data.has_pending || data.has_unread) {
+                        console.log('🚫 MENSAJE PENDIENTE ENCONTRADO - No se puede enviar nueva consulta');
                         showPendingMessageWarning(data);
                         return;
                     }
                     
-                    // Si no hay mensajes PENDING, verificar si existe email registrado
+                    // Si no hay mensajes PENDING o UNREAD, verificar si existe email registrado
                     if (data.latest_inquiry && data.latest_inquiry.customer_email) {
                         console.log('🔥🔥🔥 EMAIL YA REGISTRADO:', data.latest_inquiry.customer_email);
                         
@@ -1251,7 +1290,7 @@
         // Guardar información del paquete en variables globales para usar en submitInquiry
         window.currentPackageInfo = {
             customer_name: announcement.customer_name,
-            phone_number: announcement.phone_number,
+            customer_phone: announcement.customer_phone,
             guide_number: announcement.guide_number,
             tracking_code: announcement.tracking_code
         };
@@ -1332,10 +1371,14 @@
             })
             .then(data => {
                 console.log('✅ Datos de verificación:', data);
-                if (data.exists) {
-                    // Ya existe una consulta, ocultar el campo de email y mostrar mensaje
-                    console.log('❌ Ya existe una consulta previa para este email y paquete');
+                if (data.exists && data.has_pending) {
+                    // Ya existe una consulta PENDIENTE, ocultar el campo de email y mostrar mensaje
+                    console.log('❌ Ya existe una consulta PENDIENTE para este email y paquete');
                     hideEmailFieldAndShowMessage(data.created_at);
+                } else if (data.exists && !data.has_pending) {
+                    // Existe una consulta pero está RESUELTA, permitir nueva consulta
+                    console.log('✅ Existe consulta RESUELTA, permitiendo nueva consulta');
+                    showInquiryFormContainer();
                 } else {
                     // No existe consulta previa, mostrar el formulario completo
                     console.log('✅ No existe consulta previa, mostrando formulario completo');
@@ -1355,9 +1398,10 @@
         if (inquiryFormContainer) {
             inquiryFormContainer.classList.remove('hidden');
             // Scroll al formulario
-            inquiryFormContainer.scrollIntoView({ 
-                behavior: 'smooth' 
-            });
+            // Scroll automático desactivado
+            // inquiryFormContainer.scrollIntoView({ 
+            //     behavior: 'smooth' 
+            // });
         }
         
         // Asegurar que el campo de email esté visible y los mensajes ocultos
@@ -1375,6 +1419,27 @@
             emailField.setAttribute('required', 'required');
             console.log('✅ Atributo required restaurado en el campo de email');
         }
+        
+        // Restaurar campos de contenido y botón de envío
+        const contentField = document.getElementById('content');
+        const submitButton = document.getElementById('submitInquiryButton');
+        const submitButtonText = document.getElementById('submitInquiryButtonText');
+        
+        if (contentField) {
+            contentField.style.display = 'block';
+            console.log('✅ Campo de contenido restaurado');
+        }
+        
+        if (submitButton) {
+            submitButton.style.display = 'inline-flex';
+            submitButton.disabled = false;
+            submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
+            console.log('✅ Botón de envío restaurado');
+        }
+        
+        if (submitButtonText) {
+            submitButtonText.style.display = 'inline';
+        }
     }
     
     function showPendingMessageWarning(data) {
@@ -1386,9 +1451,10 @@
         if (inquiryFormContainer) {
             inquiryFormContainer.classList.remove('hidden');
             // Scroll al formulario
-            inquiryFormContainer.scrollIntoView({ 
-                behavior: 'smooth' 
-            });
+            // Scroll automático desactivado
+            // inquiryFormContainer.scrollIntoView({ 
+            //     behavior: 'smooth' 
+            // });
         }
         
         // Ocultar el campo de email
@@ -1406,17 +1472,17 @@
             existingInquiryMessage.classList.remove('hidden');
             console.log('✅ Mensaje de consulta pendiente mostrado');
             
-        // Mostrar información de la consulta pendiente
-        const inquiryMessageContainer = document.getElementById('existingInquiryMessage');
-        if (inquiryMessageContainer) {
-            const messageText = inquiryMessageContainer.querySelector('#existingInquiryMessage p');
-            if (messageText) {
-                messageText.textContent = 'Ya tienes una consulta pendiente para este paquete. Espera a que te respondamos antes de enviar otra consulta.';
+            // Mostrar información de la consulta pendiente
+            const inquiryMessageContainer = document.getElementById('existingInquiryMessage');
+            if (inquiryMessageContainer) {
+                const messageText = inquiryMessageContainer.querySelector('#existingInquiryMessage p');
+                if (messageText) {
+                    messageText.textContent = 'Ya tienes una consulta PENDIENTE para este paquete. Espera a que te respondamos antes de enviar otra consulta.';
+                }
             }
-        }
-        if (existingInquiryDate) {
-            existingInquiryDate.textContent = '';
-        }
+            if (existingInquiryDate) {
+                existingInquiryDate.textContent = '';
+            }
         }
         
         // Ocultar otros mensajes
@@ -1425,14 +1491,26 @@
             existingEmailMessage.classList.add('hidden');
         }
         
-        // Deshabilitar el botón de envío
+        // Ocultar el campo de texto y botón de envío completamente
+        const contentField = document.getElementById('content');
         const submitButton = document.getElementById('submitInquiryButton');
-        if (submitButton) {
-            submitButton.disabled = true;
-            submitButton.classList.add('opacity-50', 'cursor-not-allowed');
+        const submitButtonText = document.getElementById('submitInquiryButtonText');
+        
+        if (contentField) {
+            contentField.style.display = 'none';
+            console.log('✅ Campo de contenido ocultado');
         }
         
-        console.log('✅ Formulario mostrado con restricción de consulta pendiente');
+        if (submitButton) {
+            submitButton.style.display = 'none';
+            console.log('✅ Botón de envío ocultado');
+        }
+        
+        if (submitButtonText) {
+            submitButtonText.style.display = 'none';
+        }
+        
+        console.log('✅ Formulario mostrado con restricción completa de consulta PENDIENTE');
     }
 
     function showEmailRegisteredMessage(inquiryInfo) {
@@ -1443,10 +1521,10 @@
         const inquiryFormContainer = document.getElementById('inquiryFormContainer');
         if (inquiryFormContainer) {
             inquiryFormContainer.classList.remove('hidden');
-            // Scroll al formulario
-            inquiryFormContainer.scrollIntoView({ 
-                behavior: 'smooth' 
-            });
+            // Scroll automático desactivado - el usuario puede navegar manualmente
+            // inquiryFormContainer.scrollIntoView({ 
+            //     behavior: 'smooth' 
+            // });
         }
         
         // Ocultar el campo de email
@@ -1521,7 +1599,7 @@
                     existingInquiryDate.textContent = `Consulta enviada el ${formattedDate}. Te responderemos pronto.`;
                     console.log('✅ Fecha formateada y mostrada:', formattedDate);
                 } catch (error) {
-                    existingInquiryDate.textContent = 'Ya has enviado una consulta para este paquete anteriormente.';
+                    existingInquiryDate.textContent = 'Ya has enviado una consulta PENDIENTE para este paquete anteriormente.';
                     console.log('⚠️ Error formateando fecha, usando mensaje por defecto');
                 }
             }
@@ -1535,9 +1613,10 @@
             inquiryFormContainer.classList.remove('hidden');
             console.log('✅ Formulario de consulta mostrado');
             // Scroll al formulario
-            inquiryFormContainer.scrollIntoView({ 
-                behavior: 'smooth' 
-            });
+            // Scroll automático desactivado
+            // inquiryFormContainer.scrollIntoView({ 
+            //     behavior: 'smooth' 
+            // });
         } else {
             console.log('❌ No se encontró inquiryFormContainer');
         }
@@ -1603,7 +1682,7 @@
         // Preparar datos completos para enviar
         const completeData = {
             customer_name: announcement.customer_name,
-            customer_phone: announcement.phone_number,
+            customer_phone: announcement.customer_phone,
             customer_email: emailToUse,
             package_guide_number: announcement.guide_number,
             package_tracking_code: announcement.tracking_code,
@@ -1649,6 +1728,9 @@
             showInquirySuccess();
             const inquiryForm = document.getElementById('inquiryForm');
             if (inquiryForm) inquiryForm.reset();
+            
+            // Actualizar inmediatamente la restricción para evitar nuevas consultas
+            updateInquiryRestriction();
         })
         .catch(error => {
             console.error('Error al enviar consulta:', error);
@@ -1688,12 +1770,12 @@
         if (inquirySuccess) inquirySuccess.classList.remove('hidden');
         if (inquiryError) inquiryError.classList.add('hidden');
         
-        // Scroll al mensaje de éxito
-        if (inquirySuccess) {
-            inquirySuccess.scrollIntoView({ 
-                behavior: 'smooth' 
-            });
-        }
+        // Scroll automático desactivado
+        // if (inquirySuccess) {
+        //     inquirySuccess.scrollIntoView({ 
+        //         behavior: 'smooth' 
+        //     });
+        // }
     }
 
     function showInquiryError(message) {
@@ -1704,10 +1786,10 @@
         if (errorText) errorText.textContent = message;
         if (errorMessage) {
             errorMessage.classList.remove('hidden');
-            // Scroll al mensaje de error
-            errorMessage.scrollIntoView({ 
-                behavior: 'smooth' 
-            });
+            // Scroll automático desactivado
+            // errorMessage.scrollIntoView({ 
+            //     behavior: 'smooth' 
+            // });
         }
         if (inquirySuccess) inquirySuccess.classList.add('hidden');
     }
@@ -1718,6 +1800,44 @@
         
         if (inquirySuccess) inquirySuccess.classList.add('hidden');
         if (inquiryError) inquiryError.classList.add('hidden');
+    }
+    
+    function updateInquiryRestriction() {
+        console.log('🔄 Actualizando restricción de consulta inmediatamente...');
+        
+        // Obtener el tracking code actual
+        const trackingCode = window.currentPackageInfo ? window.currentPackageInfo.tracking_code : null;
+        if (!trackingCode) {
+            console.log('❌ No hay tracking code disponible para actualizar restricción');
+            return;
+        }
+        
+        // Verificar inmediatamente si hay consultas pendientes
+        fetch(`/api/messages/check-tracking-inquiries?package_tracking_code=${encodeURIComponent(trackingCode)}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al verificar restricción');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('✅ Datos de restricción actualizados:', data);
+                
+                // Si hay consultas pendientes, aplicar restricción inmediatamente
+                if (data.exists && data.count > 0) {
+                    if (data.has_pending || data.has_unread) {
+                        console.log('🚫 Aplicando restricción inmediata - hay consultas PENDIENTES');
+                        showPendingMessageWarning(data);
+                    } else {
+                        console.log('✅ No hay consultas pendientes, manteniendo formulario abierto');
+                        // Mantener el formulario abierto si no hay consultas pendientes
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('❌ Error actualizando restricción:', error);
+                // En caso de error, mantener el formulario como está
+            });
     }
 </script>
 
@@ -1745,95 +1865,27 @@
     height: 20px;
     z-index: 10;
 }
+
+/* Animación de entrada para los resultados */
+.animate-fade-in {
+    animation: fadeInUp 0.6s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Efecto de resaltado para la sección de resultados */
+.package-history-highlight {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3) !important;
+    transition: box-shadow 0.3s ease-in-out;
+}
 </style>
 {% endblock %}
-# Commit 5 - 2024-01-05
-# Change: 1757423579
-# Commit 11 - 2024-01-11
-# Change: 1757423579
-# Commit 15 - 2024-01-14
-# Change: 1757423579
-# Commit 19 - 2024-01-18
-# Change: 1757423580
-# Commit 28 - 2024-01-26
-# Change: 1757423580
-# Commit 35 - 2024-02-02
-# Change: 1757423581
-# Commit 38 - 2024-02-04
-# Change: 1757423581
-# Commit 49 - 2024-02-14
-# Change: 1757423581
-# Commit 50 - 2024-02-15
-# Change: 1757423581
-# Commit 73 - 2024-03-07
-# Change: 1757423583
-# Commit 88 - 2024-03-21
-# Change: 1757423583
-# Commit 94 - 2024-03-27
-# Change: 1757423584
-# Commit 100 - 2024-04-01
-# Change: 1757423584
-# Commit 116 - 2024-04-16
-# Change: 1757423585
-# Commit 130 - 2024-04-29
-# Change: 1757423585
-# Commit 141 - 2024-05-09
-# Change: 1757423586
-# Commit 147 - 2024-05-14
-# Change: 1757423586
-# Commit 148 - 2024-05-15
-# Change: 1757423586
-# Commit 154 - 2024-05-21
-# Change: 1757423587
-# Commit 155 - 2024-05-22
-# Change: 1757423587
-# Commit 162 - 2024-05-28
-# Change: 1757423587
-# Commit 171 - 2024-06-05
-# Change: 1757423587
-# Commit 172 - 2024-06-06
-# Change: 1757423587
-# Commit 173 - 2024-06-07
-# Change: 1757423587
-# Commit 175 - 2024-06-09
-# Change: 1757423588
-# Commit 180 - 2024-06-14
-# Change: 1757423588
-# Commit 184 - 2024-06-17
-# Change: 1757423588
-# Commit 200 - 2024-07-02
-# Change: 1757423589
-# Commit 214 - 2024-07-15
-# Change: 1757423590
-# Commit 215 - 2024-07-16
-# Change: 1757423590
-# Commit 217 - 2024-07-18
-# Change: 1757423590
-# Commit 231 - 2024-07-30
-# Change: 1757423590
-# Commit 238 - 2024-08-06
-# Change: 1757423591
-# Commit 249 - 2024-08-16
-# Change: 1757423591
-# Commit 252 - 2024-08-19
-# Change: 1757423591
-# Commit 262 - 2024-08-28
-# Change: 1757423592
-# Commit 275 - 2024-09-09
-# Change: 1757423593
-# Commit 296 - 2024-09-28
-# Change: 1757423594
-# Commit 319 - 2024-10-19
-# Change: 1757423595
-# Commit 329 - 2024-10-28
-# Change: 1757423595
-# Commit 341 - 2024-11-08
-# Change: 1757423596
-# Commit 376 - 2024-12-10
-# Change: 1757423597
-# Commit 381 - 2024-12-15
-# Change: 1757423598
-# Commit 391 - 2024-12-24
-# Change: 1757423598
-# Commit 392 - 2024-12-25
-# Change: 1757423598

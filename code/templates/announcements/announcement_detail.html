@@ -1,6 +1,7 @@
 {% extends "components/base.html" %}
 
 {% block title %}Detalle del Anuncio - PAQUETES EL CLUB v3.1{% endblock %}
+<!-- VERSION: 2025-09-09-16:30 - PHONE DISPLAY FIX -->
 
 {% block content %}
 <!-- Sistema de Notificaciones Toast -->
@@ -41,7 +42,17 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-                            <p class="text-lg text-gray-900">{{ announcement.phone_number if announcement.phone_number else 'Sin teléfono' }}</p>
+                            <p class="text-lg text-gray-900">
+                                {% if announcement.customer_phone %}
+                                    <span data-phone="{{ announcement.customer_phone }}" 
+                                          data-message="Consulta sobre paquete {{ announcement.tracking_code or announcement.guide_number }}"
+                                          data-use-both-icons="true">
+                                        {{ announcement.customer_phone }}
+                                    </span>
+                                {% else %}
+                                    Sin teléfono
+                                {% endif %}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -471,7 +482,7 @@ async function loadAnnouncementTimeline() {
         const announcementData = {
             id: '{{ announcement.id }}',
             customer_name: '{{ announcement.customer_name }}',
-            phone_number: '{{ announcement.phone_number }}',
+            customer_phone: '{{ announcement.customer_phone }}',
             guide_number: '{{ announcement.guide_number }}',
             tracking_code: '{{ announcement.tracking_code }}',
             is_processed: '{{ announcement.is_processed }}' === 'True',
@@ -531,7 +542,7 @@ function displayTimeline(announcement) {
             bgColor: 'bg-yellow-100',
             details: {
                 customer_name: announcement.customer_name || 'N/A',
-                phone_number: announcement.phone_number || 'N/A',
+                customer_phone: announcement.customer_phone || 'N/A',
                 guide_number: announcement.guide_number || 'N/A',
                 tracking_code: announcement.tracking_code || 'N/A',
                 package_type: '{{ announcement.package_type or "Normal" }}',
@@ -674,7 +685,7 @@ function displayTimeline(announcement) {
                                 <span class="text-gray-600">Guía:</span> <span class="font-mono font-medium">${item.details.guide_number}</span>
                             </div>
                             <div class="bg-white rounded px-2 py-1 border">
-                                <span class="text-gray-600">Teléfono:</span> <span class="font-medium">${item.details.phone_number}</span>
+                                <span class="text-gray-600">Teléfono:</span> <span class="font-medium">${createPhoneLinksHTML(item.details.customer_phone, `Consulta sobre paquete ${item.details.tracking_code || item.details.guide_number}`)}</span>
                             </div>
                             <div class="bg-white rounded px-2 py-1 border">
                                 <span class="text-gray-600">Fecha:</span> <span class="font-medium">${formattedDate}</span>
