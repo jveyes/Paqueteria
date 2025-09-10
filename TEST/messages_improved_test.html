@@ -1,0 +1,144 @@
+<!-- SISTEMA DE FILTRADO MEJORADO - VERSIÓN OPTIMIZADA -->
+
+<!-- Filtros Mejorados -->
+<div class="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:space-x-6">
+        <h2 class="text-lg font-medium text-gray-900 mb-4 lg:mb-0 lg:flex-shrink-0">Filtros Avanzados</h2>
+        
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full">
+            <!-- Búsqueda Principal Mejorada -->
+            <div class="relative flex-1 min-w-0">
+                <div class="relative">
+                    <input id="searchFilter" 
+                           type="text" 
+                           placeholder="Buscar en nombre, teléfono, contenido, guía..."
+                           class="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:border-papyrus-blue focus:ring-1 focus:ring-papyrus-blue bg-white transition-colors text-sm">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                    <!-- Indicador de búsqueda activa -->
+                    <div id="searchIndicator" class="absolute inset-y-0 right-0 pr-3 flex items-center hidden">
+                        <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-papyrus-blue"></div>
+                    </div>
+                </div>
+                <!-- Sugerencias de búsqueda -->
+                <div id="searchSuggestions" class="hidden absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    <!-- Las sugerencias se cargarán aquí dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Filtros Rápidos -->
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <!-- Filtro por Estado -->
+                <select id="statusFilter" class="px-3 py-2 border border-gray-300 rounded-lg focus:border-papyrus-blue focus:ring-1 focus:ring-papyrus-blue bg-white transition-colors text-sm">
+                    <option value="">Todos los estados</option>
+                    <option value="unread">No Leídos</option>
+                    <option value="pending">Pendientes</option>
+                    <option value="closed">Cerrados</option>
+                </select>
+
+                <!-- Filtro por Prioridad -->
+                <select id="priorityFilter" class="px-3 py-2 border border-gray-300 rounded-lg focus:border-papyrus-blue focus:ring-1 focus:ring-papyrus-blue bg-white transition-colors text-sm">
+                    <option value="">Todas las prioridades</option>
+                    <option value="urgent">Urgente</option>
+                    <option value="high">Alta</option>
+                    <option value="normal">Normal</option>
+                    <option value="low">Baja</option>
+                </select>
+
+                <!-- Filtro por Tipo -->
+                <select id="typeFilter" class="px-3 py-2 border border-gray-300 rounded-lg focus:border-papyrus-blue focus:ring-1 focus:ring-papyrus-blue bg-white transition-colors text-sm">
+                    <option value="">Todos los tipos</option>
+                    <option value="customer_inquiry">Consulta de Cliente</option>
+                    <option value="support">Soporte</option>
+                    <option value="internal">Interno</option>
+                    <option value="system">Sistema</option>
+                </select>
+
+                <!-- Botones de Acción -->
+                <div class="flex items-center gap-1">
+                    <!-- Filtro Solo No Leídos -->
+                    <button id="unreadOnlyToggle" 
+                            class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                            title="Solo mensajes no leídos">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                        No Leídos
+                    </button>
+
+                    <!-- Botón de Limpiar -->
+                    <button id="clearFilters" 
+                            class="inline-flex items-center justify-center w-10 h-10 border border-gray-300 rounded-lg shadow-sm text-gray-700 bg-white hover:bg-gray-50 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-papyrus-blue"
+                            title="Limpiar todos los filtros">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                    </button>
+
+                    <!-- Botón de Filtros Avanzados -->
+                    <button id="advancedFiltersToggle" 
+                            class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                            title="Filtros avanzados">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
+                        </svg>
+                        Avanzados
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel de Filtros Avanzados (Oculto por defecto) -->
+    <div id="advancedFiltersPanel" class="hidden mt-4 pt-4 border-t border-gray-200">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Filtro por Fecha -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Rango de Fechas</label>
+                <div class="flex space-x-2">
+                    <input id="dateFrom" type="date" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:border-papyrus-blue focus:ring-1 focus:ring-papyrus-blue text-sm">
+                    <input id="dateTo" type="date" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:border-papyrus-blue focus:ring-1 focus:ring-papyrus-blue text-sm">
+                </div>
+            </div>
+
+            <!-- Filtro por Cliente -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Cliente Específico</label>
+                <input id="customerFilter" type="text" placeholder="Nombre o email del cliente" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-papyrus-blue focus:ring-1 focus:ring-papyrus-blue text-sm">
+            </div>
+
+            <!-- Filtro por Paquete -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Información del Paquete</label>
+                <input id="packageFilter" type="text" placeholder="Guía o código de tracking" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-papyrus-blue focus:ring-1 focus:ring-papyrus-blue text-sm">
+            </div>
+        </div>
+    </div>
+
+    <!-- Indicadores de Filtros Activos -->
+    <div id="activeFilters" class="mt-4 flex flex-wrap gap-2 hidden">
+        <!-- Los filtros activos se mostrarán aquí -->
+    </div>
+</div>
+
+<!-- Contador de Resultados Mejorado -->
+<div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+            <span id="resultsCount" class="text-sm font-medium text-blue-900">Cargando mensajes...</span>
+            <span id="filterStatus" class="text-xs text-blue-600"></span>
+        </div>
+        <div class="flex items-center space-x-2">
+            <button id="exportResults" class="text-xs text-blue-600 hover:text-blue-800 transition-colors">
+                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Exportar
+            </button>
+        </div>
+    </div>
+</div>

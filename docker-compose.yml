@@ -52,10 +52,19 @@ services:
       - DATABASE_URL=postgresql://jveyes:a?HC!2.*1#?[==:|289qAI=)#V4kDzl$$@ls-abe25e9bea57818f0ee32555c0e7b4a10e361535.ctobuhtlkwoj.us-east-1.rds.amazonaws.com:5432/paqueteria
       - REDIS_URL=redis://redis:6379/0
       - SECRET_KEY=paqueteria-secret-key-2025-super-secure-jwt-token-key-for-authentication-localhost
+      - SMTP_HOST=taylor.mxrouting.net
+      - SMTP_PORT=587
+      - SMTP_USER=guia@papyrus.com.co
+      - SMTP_PASSWORD=^Kxub2aoh@xC2LsK
+      - SMTP_FROM_NAME=PAQUETES EL CLUB
+      - SMTP_FROM_EMAIL=guia@papyrus.com.co
+      - SMTP_USE_TLS=True
+      - SMTP_USE_SSL=False
     volumes:
       - ./code/uploads:/app/uploads
       - ./code/logs:/app/logs
       - ./code/database/backups:/app/database/backups
+      - ./code/templates:/app/templates
     networks:
       - paqueteria_network
     restart: unless-stopped
@@ -89,6 +98,14 @@ services:
       - DATABASE_URL=postgresql://jveyes:a?HC!2.*1#?[==:|289qAI=)#V4kDzl$$@ls-abe25e9bea57818f0ee32555c0e7b4a10e361535.ctobuhtlkwoj.us-east-1.rds.amazonaws.com:5432/paqueteria
       - REDIS_URL=redis://redis:6379/0
       - SECRET_KEY=paqueteria-secret-key-2025-super-secure-jwt-token-key-for-authentication-localhost
+      - SMTP_HOST=taylor.mxrouting.net
+      - SMTP_PORT=587
+      - SMTP_USER=guia@papyrus.com.co
+      - SMTP_PASSWORD=^Kxub2aoh@xC2LsK
+      - SMTP_FROM_NAME=PAQUETES EL CLUB
+      - SMTP_FROM_EMAIL=guia@papyrus.com.co
+      - SMTP_USE_TLS=True
+      - SMTP_USE_SSL=False
     volumes:
       - ./code/uploads:/app/uploads
       - ./code/logs:/app/logs

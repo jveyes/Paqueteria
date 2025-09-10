@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulación Frontend - Debug customer_phone</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        .button:hover {
+            background: #2563eb;
+        }
+        .debug-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .error {
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c33;
+        }
+        .success {
+            background: #efe;
+            border: 1px solid #cfc;
+            color: #3c3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Simulación Frontend - Debug customer_phone</h1>
+        
+        <div class="section">
+            <h2>Prueba de Búsqueda</h2>
+            <input type="text" id="searchInput" placeholder="Ingresa un código de tracking" value="29XN">
+            <button class="button" onclick="testSearch()">Buscar</button>
+        </div>
+        
+        <div class="section">
+            <h2>Resultados</h2>
+            <div id="results">
+                <p>CLIENTE: <span id="customerName">-</span></p>
+                <p>TELÉFONO: <span id="customerPhone">-</span></p>
+                <p>NÚMERO DE GUÍA: <span id="guideNumber">-</span></p>
+                <p>CÓDIGO DE CONSULTA: <span id="trackingCode">-</span></p>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Debug Info</h2>
+            <div id="debugInfo" class="debug-info">
+                Esperando búsqueda...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function testSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const query = searchInput.value.trim();
+            
+            if (!query) {
+                alert('Por favor ingresa un código de tracking');
+                return;
+            }
+            
+            const debugInfo = document.getElementById('debugInfo');
+            debugInfo.innerHTML = `🔍 Buscando: ${query}...`;
+            debugInfo.className = 'debug-info';
+            
+            // Simular exactamente lo que hace el frontend
+            fetch(`/api/announcements/search/package?query=${encodeURIComponent(query)}`)
+                .then(response => {
+                    debugInfo.innerHTML += `<br>📡 Response status: ${response.status}`;
+                    
+                    if (!response.ok) {
+                        if (response.status === 404) {
+                            throw new Error('NOT_FOUND');
+                        }
+                        throw new Error('SEARCH_ERROR');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    debugInfo.innerHTML += `<br>✅ Datos recibidos:`;
+                    debugInfo.innerHTML += `<br>  - Tipo de data: ${typeof data}`;
+                    debugInfo.innerHTML += `<br>  - data.announcement existe: ${data.announcement ? 'SÍ' : 'NO'}`;
+                    
+                    if (data.announcement) {
+                        debugInfo.innerHTML += `<br>  - data.announcement.customer_phone: ${JSON.stringify(data.announcement.customer_phone)}`;
+                        debugInfo.innerHTML += `<br>  - Tipo de customer_phone: ${typeof data.announcement.customer_phone}`;
+                        debugInfo.innerHTML += `<br>  - customer_phone es undefined: ${data.announcement.customer_phone === undefined}`;
+                        debugInfo.innerHTML += `<br>  - customer_phone es null: ${data.announcement.customer_phone === null}`;
+                    }
+                    
+                    // Simular exactamente el código del frontend
+                    displayResults(data);
+                })
+                .catch(error => {
+                    debugInfo.innerHTML += `<br>❌ Error: ${error.message}`;
+                    debugInfo.className = 'debug-info error';
+                });
+        }
+        
+        function displayResults(data) {
+            const debugInfo = document.getElementById('debugInfo');
+            
+            // Llenar información del paquete (código exacto del frontend)
+            const customerName = document.getElementById('customerName');
+            const customerPhone = document.getElementById('customerPhone');
+            const guideNumber = document.getElementById('guideNumber');
+            const trackingCode = document.getElementById('trackingCode');
+            
+            debugInfo.innerHTML += `<br><br>🎯 Ejecutando displayResults:`;
+            debugInfo.innerHTML += `<br>  - customerName elemento: ${customerName ? 'ENCONTRADO' : 'NO ENCONTRADO'}`;
+            debugInfo.innerHTML += `<br>  - customerPhone elemento: ${customerPhone ? 'ENCONTRADO' : 'NO ENCONTRADO'}`;
+            
+            if (customerName) {
+                customerName.textContent = data.announcement.customer_name;
+                debugInfo.innerHTML += `<br>  - customerName.textContent = "${data.announcement.customer_name}"`;
+            }
+            
+            if (customerPhone) {
+                const phoneValue = data.announcement.customer_phone;
+                debugInfo.innerHTML += `<br>  - phoneValue = ${JSON.stringify(phoneValue)}`;
+                debugInfo.innerHTML += `<br>  - phoneValue tipo: ${typeof phoneValue}`;
+                
+                customerPhone.textContent = phoneValue;
+                debugInfo.innerHTML += `<br>  - customerPhone.textContent = "${phoneValue}"`;
+                
+                // Verificar el resultado final
+                debugInfo.innerHTML += `<br>  - customerPhone.textContent final: "${customerPhone.textContent}"`;
+            }
+            
+            if (guideNumber) {
+                guideNumber.textContent = data.announcement.guide_number;
+                debugInfo.innerHTML += `<br>  - guideNumber.textContent = "${data.announcement.guide_number}"`;
+            }
+            
+            if (trackingCode) {
+                trackingCode.textContent = data.announcement.tracking_code;
+                debugInfo.innerHTML += `<br>  - trackingCode.textContent = "${data.announcement.tracking_code}"`;
+            }
+            
+            debugInfo.className = 'debug-info success';
+        }
+        
+        // Auto-focus en el campo de búsqueda
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.focus();
+            }
+        });
+    </script>
+</body>
+</html>

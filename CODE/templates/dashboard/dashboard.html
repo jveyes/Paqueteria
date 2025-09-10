@@ -1,0 +1,611 @@
+{% extends "components/base.html" %}
+
+{% block title %}Dashboard - PAQUETES EL CLUB v3.1{% endblock %}
+<!-- VERSION: 2025-09-09-16:45 - PHONE DISPLAY FIX v2 -->
+
+{% block content %}
+<!-- Sistema de Notificaciones Toast -->
+<div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+    <div class="space-y-6">
+        <!-- Header -->
+        <div class="sm:flex sm:items-center sm:justify-between">
+            <div>
+                <h1 class="text-xl sm:text-2xl md:text-3xl font-light text-gray-900">Dashboard</h1>
+                <p class="mt-2 text-sm text-gray-500">
+                    Bienvenido, {{ user_name|default('Usuario') }} 
+                    {% if user_role %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                        {% if user_role == 'ADMIN' %}bg-papyrus-red bg-opacity-10 text-papyrus-red
+                        {% elif user_role == 'OPERATOR' %}bg-papyrus-blue bg-opacity-10 text-papyrus-blue
+                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                    </span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 sm:mb-8">
+            <!-- Paquetes Anunciados -->
+            <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg hover:border-yellow-300 transition-all duration-200 cursor-pointer transform hover:scale-105" onclick="filterPackages('anunciado')">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-yellow-100 rounded-lg p-2">
+                        <svg class="w-6 h-6 text-papyrus-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-600 uppercase tracking-wide">ANUNCIADOS</h3>
+                        <p class="text-2xl font-bold text-gray-900">{{ stats.announced_packages if stats else 0 }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Paquetes Procesados -->
+            <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg hover:border-blue-300 transition-all duration-200 cursor-pointer transform hover:scale-105" onclick="filterPackages('procesado')">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-blue-100 rounded-lg p-2">
+                        <svg class="w-6 h-6 text-papyrus-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-600 uppercase tracking-wide">RECIBIDOS</h3>
+                        <p class="text-2xl font-bold text-gray-900">{{ stats.processed_announcements if stats else 0 }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Anuncios -->
+            <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg hover:border-green-300 transition-all duration-200 cursor-pointer transform hover:scale-105">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-green-100 rounded-lg p-2">
+                        <svg class="w-6 h-6 text-papyrus-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-600 uppercase tracking-wide">ENTREGADOS</h3>
+                        <p class="text-2xl font-bold text-gray-900">{{ stats.total_announcements if stats else 0 }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:space-x-6">
+                <div class="flex items-center space-x-3 mb-4 lg:mb-0 lg:flex-shrink-0">
+                    <h2 class="text-lg font-medium text-gray-900">Filtros</h2>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row sm:items-center gap-4 w-full">
+                    <!-- Filtros ocultos (mantenidos para funcionalidad) -->
+                    <div class="hidden">
+                        <select id="statusFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-papyrus-blue focus:ring-1 focus:ring-papyrus-blue bg-white transition-colors appearance-none text-sm">
+                            <option value="">Todos los estados</option>
+                            <option value="anunciado">Anunciados</option>
+                            <option value="procesado">Procesados</option>
+                        </select>
+                    </div>
+
+                    <div class="hidden">
+                        <select id="typeFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-papyrus-blue focus:ring-1 focus:ring-papyrus-blue bg-white transition-colors appearance-none text-sm">
+                            <option value="">Todos los tipos</option>
+                            <option value="documento">Documento</option>
+                            <option value="paquete">Paquete</option>
+                            <option value="sobre">Sobre</option>
+                        </select>
+                    </div>
+
+        <!-- Búsqueda por cliente/paquete -->
+        <div class="relative flex-1 min-w-0">
+            <div class="relative">
+                <input id="searchFilter" 
+                       type="text" 
+                       placeholder="Buscar por guía, cliente, teléfono, estado, tipo, observaciones..."
+                                   class="w-full px-3 py-2 pl-10 border-2 border-gray-300 rounded-lg focus:border-papyrus-blue focus:ring-2 focus:ring-papyrus-blue bg-white transition-all duration-200 text-sm shadow-sm hover:shadow-md"
+                                   style="border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+                <div id="searchIndicator" class="absolute inset-y-0 right-0 pr-3 flex items-center hidden">
+                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-papyrus-blue"></div>
+                </div>
+            </div>
+        </div>
+
+                    <!-- Botones de acción -->
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <!-- Botón de limpiar filtros (solo icono) -->
+                        <button id="clearFilters" 
+                                class="inline-flex items-center justify-center w-10 h-10 border border-gray-300 rounded-lg shadow-sm text-gray-700 bg-white hover:bg-gray-50 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-papyrus-blue"
+                                title="Limpiar filtros">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                        </button>
+
+
+                        <!-- Botón Nuevo Paquete (Icono) -->
+                        <a href="/announce" 
+                           class="inline-flex items-center justify-center w-10 h-10 text-white bg-gradient-to-r from-papyrus-blue to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 ease-out"
+                           title="Nuevo Paquete">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Actividad Reciente -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-100">
+            <div class="border-b border-gray-100 px-4 sm:px-8 py-4 sm:py-6">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-medium text-gray-900">Lista de Paquetes</h2>
+                </div>
+            </div>
+            <div class="p-4 sm:p-8">
+                <div class="space-y-4">
+                    {% if recent_packages and recent_packages|length > 0 %}
+                        {% for package in recent_packages[:10] %}
+                        <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg hover:border-papyrus-blue transition-all duration-200 cursor-pointer transform hover:scale-[1.02]" 
+                             onclick="viewAnnouncementDetail('{{ package.guide_number }}')"
+                             data-search="{{ package.tracking_code|lower }} {{ package.guide_number|lower }} {{ package.customer_name|lower }} {{ package.customer_phone|lower if package.customer_phone else '' }} {{ 'anunciado' if not package.is_processed else 'procesado' }} {{ package.package_type|lower if package.package_type else '' }} {{ package.observations|lower if package.observations else '' }}">
+                            <div class="flex items-start space-x-3">
+                                <div class="flex-shrink-0">
+                                    <div class="bg-gray-100 rounded-lg p-2">
+                                        {% if not package.is_processed %}
+                                            <svg class="w-6 h-6 text-papyrus-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                        {% else %}
+                                            <svg class="w-6 h-6 text-papyrus-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <div class="flex items-center space-x-2 mb-2">
+                                                <h4 class="text-base font-semibold text-gray-900 truncate">{{ package.tracking_code }}</h4>
+                                                {% if package.guide_number %}
+                                                <span class="text-sm text-gray-500">({{ package.guide_number }})</span>
+                                                {% endif %}
+                                            </div>
+                                            <p class="text-base font-medium text-gray-700 mb-2">{{ package.customer_name }}</p>
+                                            <div class="mt-2 flex flex-wrap items-center gap-3 text-sm text-gray-600">
+                                                <span class="flex items-center">
+                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                                                    </svg>
+                                                    {% if package.customer_phone %}
+                                                        {{ package.customer_phone }}
+                                                    {% else %}
+                                                        Sin teléfono
+                                                    {% endif %}
+                                                    <!-- DEBUG: package.customer_phone = {{ package.customer_phone }} -->
+                                                </span>
+                                                <span class="flex items-center">
+                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                    </svg>
+                                                    {{ package.announced_at.strftime('%d/%m/%Y %H:%M') if package.announced_at else 'N/A' }}
+                                                </span>
+                                                {% if package.package_type %}
+                                                <span class="flex items-center">
+                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                                    </svg>
+                                                    {{ package.package_type|title }}
+                                                </span>
+                                                {% endif %}
+                                                {% if package.estimated_cost and package.estimated_cost > 0 %}
+                                                <span class="flex items-center">
+                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                                                    </svg>
+                                                    ${{ "%.0f"|format(package.estimated_cost) }}
+                                                </span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="ml-4 flex-shrink-0">
+                                            {% if not package.is_processed %}
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-yellow-100 text-papyrus-yellow">ANUNCIADO</span>
+                                            {% else %}
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-papyrus-green">PROCESADO</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-8">
+                            <div class="bg-gray-100 rounded-lg p-3 inline-flex mx-auto mb-4">
+                                <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-medium text-gray-900">No hay actividad reciente</h3>
+                            <p class="mt-2 text-sm text-gray-500">Los paquetes recientes aparecerán aquí.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<style>
+/* Estilos para notificaciones toast */
+.toast {
+    min-width: 300px;
+    max-width: 400px;
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transform: translateX(100%);
+    opacity: 0;
+    transition: all 0.3s ease-in-out;
+    position: relative;
+    overflow: hidden;
+}
+
+.toast.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.toast.success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.toast.error {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+}
+
+.toast.info {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+}
+
+.toast.warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+}
+
+.toast-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+}
+
+.toast-content {
+    flex: 1;
+}
+
+.toast-title {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.toast-message {
+    font-size: 13px;
+    opacity: 0.9;
+    line-height: 1.4;
+}
+
+.toast-close {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.toast-close:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.toast-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background-color: rgba(255, 255, 255, 0.3);
+    transition: width linear;
+}
+
+/* Animaciones mejoradas */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+/* Mejoras para elementos interactivos */
+.hover-lift {
+    transition: transform 0.2s ease-in-out;
+}
+
+.hover-lift:hover {
+    transform: translateY(-2px);
+}
+
+/* Loading spinner mejorado */
+.loading-spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+</style>
+
+<script>
+// Sistema de Notificaciones Toast (copiado de messages.html)
+function showToast(type, title, message, duration = 5000) {
+    const container = document.getElementById('toastContainer');
+    const toastId = 'toast-' + Date.now();
+    
+    const icons = {
+        success: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+        error: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+        info: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+        warning: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z"></path></svg>'
+    };
+    
+    const toastHTML = `
+        <div id="${toastId}" class="toast ${type}">
+            <div class="toast-icon">${icons[type] || icons.info}</div>
+            <div class="toast-content">
+                <div class="toast-title">${title}</div>
+                <div class="toast-message">${message}</div>
+            </div>
+            <button class="toast-close" onclick="removeToast('${toastId}')">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+            <div class="toast-progress" style="width: 100%;"></div>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', toastHTML);
+    
+    const toast = document.getElementById(toastId);
+    const progress = toast.querySelector('.toast-progress');
+    
+    // Mostrar toast
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 100);
+    
+    // Iniciar barra de progreso
+    setTimeout(() => {
+        progress.style.width = '0%';
+        progress.style.transition = `width ${duration}ms linear`;
+    }, 100);
+    
+    // Auto-remover después de la duración
+    setTimeout(() => {
+        removeToast(toastId);
+    }, duration);
+    
+    return toastId;
+}
+
+function removeToast(toastId) {
+    const toast = document.getElementById(toastId);
+    if (toast) {
+        toast.classList.remove('show');
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
+    }
+}
+
+// Funciones de conveniencia
+function showSuccessToast(title, message, duration) {
+    return showToast('success', title, message, duration);
+}
+
+function showErrorToast(title, message, duration) {
+    return showToast('error', title, message, duration);
+}
+
+function showInfoToast(title, message, duration) {
+    return showToast('info', title, message, duration);
+}
+
+function showWarningToast(title, message, duration) {
+    return showToast('warning', title, message, duration);
+}
+
+
+// Función para actualizar el indicador de filtros activos
+function updateActiveFiltersIndicator() {
+    const searchFilter = document.getElementById('searchFilter');
+    const searchTerm = searchFilter ? searchFilter.value.trim() : '';
+    
+    // Verificar si hay filtros activos
+    const hasActiveFilters = searchTerm.length > 0;
+    
+    // Actualizar el estilo del campo de búsqueda
+    if (searchFilter) {
+        if (hasActiveFilters) {
+            searchFilter.classList.add('border-yellow-400', 'bg-yellow-50');
+            searchFilter.classList.remove('border-gray-300');
+        } else {
+            searchFilter.classList.remove('border-yellow-400', 'bg-yellow-50');
+            searchFilter.classList.add('border-gray-300');
+        }
+    }
+    
+    // Mostrar/ocultar mensaje de filtros activos
+    let filterIndicator = document.getElementById('filterIndicator');
+    if (hasActiveFilters && !filterIndicator) {
+        // Crear indicador de filtros activos
+        filterIndicator = document.createElement('div');
+        filterIndicator.id = 'filterIndicator';
+        filterIndicator.className = 'mt-2 p-2 bg-yellow-100 border border-yellow-300 rounded-lg';
+        filterIndicator.innerHTML = `
+            <div class="flex items-center">
+                <svg class="w-4 h-4 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                </svg>
+                <span class="text-sm text-yellow-800">Filtros activos: "${searchTerm}"</span>
+                <button onclick="clearAllFilters()" class="ml-auto text-yellow-600 hover:text-yellow-800">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        `;
+        
+        // Insertar después del contenedor de filtros
+        const filtersContainer = document.querySelector('.bg-white.rounded-xl.shadow-lg.border.border-gray-100');
+        if (filtersContainer) {
+            filtersContainer.parentNode.insertBefore(filterIndicator, filtersContainer.nextSibling);
+        }
+    } else if (!hasActiveFilters && filterIndicator) {
+        // Remover indicador si no hay filtros
+        filterIndicator.remove();
+    }
+}
+
+// Función para limpiar todos los filtros
+function clearAllFilters() {
+    const searchFilter = document.getElementById('searchFilter');
+    if (searchFilter) {
+        searchFilter.value = '';
+    }
+    
+    // Mostrar todos los paquetes
+    const packageCards = document.querySelectorAll('[onclick*="viewAnnouncementDetail"]');
+    packageCards.forEach(card => {
+        card.style.display = 'block';
+    });
+    
+}
+
+// Funciones específicas del dashboard
+function filterPackages(status) {
+    const packageCards = document.querySelectorAll('[onclick*="viewAnnouncementDetail"]');
+    
+    packageCards.forEach(card => {
+            const statusElement = card.querySelector('span[class*="bg-"]');
+            const statusText = statusElement ? statusElement.textContent.trim() : '';
+            
+            const statusMap = {
+                'anunciado': 'ANUNCIADO',
+                'procesado': 'PROCESADO'
+            };
+            
+        if (statusText === statusMap[status]) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+    
+    // Limpiar búsqueda
+    const searchFilter = document.getElementById('searchFilter');
+    if (searchFilter) {
+        searchFilter.value = '';
+    }
+    
+}
+
+// Función para ver el detalle del anuncio
+function viewAnnouncementDetail(guideNumber) {
+    window.location.href = `/announcements/guide/${guideNumber}`;
+}
+
+
+
+
+// Event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Dashboard cargado');
+    
+    // Enfocar automáticamente el campo de búsqueda
+    setTimeout(() => {
+        const searchInput = document.getElementById('searchFilter');
+        if (searchInput) {
+            searchInput.focus();
+            console.log('Campo de búsqueda enfocado automáticamente');
+        }
+    }, 500); // Pequeño delay para asegurar que la página esté completamente cargada
+    
+    // Event listener para búsqueda
+    const searchFilter = document.getElementById('searchFilter');
+    if (searchFilter) {
+        searchFilter.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase().trim();
+            const packageCards = document.querySelectorAll('[onclick*="viewAnnouncementDetail"]');
+            
+            packageCards.forEach(card => {
+                const searchData = card.getAttribute('data-search') || '';
+                
+                if (searchTerm === '' || searchData.includes(searchTerm)) {
+                    card.style.display = 'block';
+        } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+        });
+    }
+    
+    // Botón limpiar filtros
+    const clearFilters = document.getElementById('clearFilters');
+    if (clearFilters) {
+        clearFilters.addEventListener('click', function() {
+            clearAllFilters();
+        });
+    }
+    
+});
+</script>
+{% endblock %}

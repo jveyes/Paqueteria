@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba Directa - Debug customer_phone</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        .button:hover {
+            background: #2563eb;
+        }
+        .debug-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .error {
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c33;
+        }
+        .success {
+            background: #efe;
+            border: 1px solid #cfc;
+            color: #3c3;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Prueba Directa - Debug customer_phone</h1>
+        
+        <div class="section">
+            <h2>Prueba de Búsqueda</h2>
+            <input type="text" id="searchInput" placeholder="Ingresa un código de tracking" value="29XN">
+            <button class="button" onclick="testSearch()">Buscar</button>
+            <button class="button" onclick="clearDebug()">Limpiar Debug</button>
+        </div>
+        
+        <div class="section">
+            <h2>Resultados</h2>
+            <div id="results">
+                <p><strong>CLIENTE:</strong> <span id="customerName">-</span></p>
+                <p><strong>TELÉFONO:</strong> <span id="customerPhone">-</span></p>
+                <p><strong>NÚMERO DE GUÍA:</strong> <span id="guideNumber">-</span></p>
+                <p><strong>CÓDIGO DE CONSULTA:</strong> <span id="trackingCode">-</span></p>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Debug Info</h2>
+            <div id="debugInfo" class="debug-info">
+                Esperando búsqueda...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function log(message) {
+            const debugInfo = document.getElementById('debugInfo');
+            const timestamp = new Date().toLocaleTimeString();
+            debugInfo.textContent += `[${timestamp}] ${message}\n`;
+            debugInfo.scrollTop = debugInfo.scrollHeight;
+            console.log(message);
+        }
+        
+        function clearDebug() {
+            const debugInfo = document.getElementById('debugInfo');
+            debugInfo.textContent = 'Debug limpiado...\n';
+            debugInfo.className = 'debug-info';
+        }
+        
+        function testSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const query = searchInput.value.trim();
+            
+            if (!query) {
+                alert('Por favor ingresa un código de tracking');
+                return;
+            }
+            
+            log(`🔍 Iniciando búsqueda para: ${query}`);
+            
+            // Simular exactamente lo que hace el frontend
+            fetch(`/api/announcements/search/package?query=${encodeURIComponent(query)}`)
+                .then(response => {
+                    log(`📡 Response status: ${response.status}`);
+                    log(`📡 Response ok: ${response.ok}`);
+                    
+                    if (!response.ok) {
+                        if (response.status === 404) {
+                            throw new Error('NOT_FOUND');
+                        }
+                        throw new Error('SEARCH_ERROR');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    log(`✅ Datos recibidos: ${JSON.stringify(data, null, 2)}`);
+                    
+                    // Debug específico para customer_phone
+                    log(`🔧 DEBUG: data.announcement: ${JSON.stringify(data.announcement)}`);
+                    log(`🔧 DEBUG: data.announcement.customer_phone: ${JSON.stringify(data.announcement.customer_phone)}`);
+                    log(`🔧 DEBUG: typeof data.announcement.customer_phone: ${typeof data.announcement.customer_phone}`);
+                    
+                    // Simular exactamente el código del frontend
+                    displayResults(data);
+                })
+                .catch(error => {
+                    log(`❌ Error: ${error.message}`);
+                    document.getElementById('debugInfo').className = 'debug-info error';
+                });
+        }
+        
+        function displayResults(data) {
+            log(`🎯 Ejecutando displayResults`);
+            
+            // Llenar información del paquete (código exacto del frontend)
+            const customerName = document.getElementById('customerName');
+            const customerPhone = document.getElementById('customerPhone');
+            const guideNumber = document.getElementById('guideNumber');
+            const trackingCode = document.getElementById('trackingCode');
+            
+            log(`🔧 DEBUG: customerName element: ${customerName ? 'ENCONTRADO' : 'NO ENCONTRADO'}`);
+            log(`🔧 DEBUG: customerPhone element: ${customerPhone ? 'ENCONTRADO' : 'NO ENCONTRADO'}`);
+            
+            if (customerName) {
+                customerName.textContent = data.announcement.customer_name;
+                log(`🔧 DEBUG: customerName.textContent = "${data.announcement.customer_name}"`);
+            }
+            
+            if (customerPhone) {
+                const phoneValue = data.announcement.customer_phone;
+                log(`🔧 DEBUG: phoneValue = ${JSON.stringify(phoneValue)}`);
+                log(`🔧 DEBUG: phoneValue tipo: ${typeof phoneValue}`);
+                
+                customerPhone.textContent = phoneValue;
+                log(`🔧 DEBUG: customerPhone.textContent = "${phoneValue}"`);
+                
+                // Verificar el resultado final
+                log(`🔧 DEBUG: customerPhone.textContent final: "${customerPhone.textContent}"`);
+                
+                // Verificar si aparece como "undefined"
+                if (customerPhone.textContent === 'undefined') {
+                    log(`❌ PROBLEMA DETECTADO: textContent es 'undefined'`);
+                    document.getElementById('debugInfo').className = 'debug-info error';
+                } else if (customerPhone.textContent === '') {
+                    log(`⚠️ ADVERTENCIA: textContent está vacío`);
+                    document.getElementById('debugInfo').className = 'debug-info warning';
+                } else {
+                    log(`✅ textContent correcto: "${customerPhone.textContent}"`);
+                    document.getElementById('debugInfo').className = 'debug-info success';
+                }
+            }
+            
+            if (guideNumber) {
+                guideNumber.textContent = data.announcement.guide_number;
+                log(`🔧 DEBUG: guideNumber.textContent = "${data.announcement.guide_number}"`);
+            }
+            
+            if (trackingCode) {
+                trackingCode.textContent = data.announcement.tracking_code;
+                log(`🔧 DEBUG: trackingCode.textContent = "${data.announcement.tracking_code}"`);
+            }
+        }
+        
+        // Auto-focus en el campo de búsqueda
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.focus();
+            }
+            log('🚀 Página cargada, listo para pruebas');
+        });
+    </script>
+</body>
+</html>
