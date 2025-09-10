@@ -16,7 +16,7 @@ from ..models.announcement import PackageAnnouncement
 from ..models.package import Package, PackageStatus
 from ..models.message import Message, MessageType
 from ..schemas.announcement import AnnouncementCreate, AnnouncementUpdate, AnnouncementResponse
-from ..dependencies import get_current_active_user
+from ..dependencies import get_current_active_user, get_current_active_user_from_cookies
 from ..utils.rate_limiter import check_rate_limit, get_rate_limit_info, reset_rate_limit
 from ..utils.datetime_utils import get_colombia_datetime, format_colombia_datetime, get_colombia_now
 
@@ -953,7 +953,7 @@ async def create_package_from_announcement(
     announcement_id: uuid.UUID,
     request: Request,
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_active_user)
+    current_user = Depends(get_current_active_user_from_cookies)
 ):
     """Crear un paquete desde un anuncio (procesar anuncio)"""
     

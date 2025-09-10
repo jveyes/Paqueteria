@@ -6,9 +6,9 @@ from sqlalchemy import Column, String, Text, DateTime, Enum, ForeignKey, JSON
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 import enum
+import uuid
 from datetime import datetime
 
-from .base import BaseModel
 from ..database.database import Base
 from ..utils.datetime_utils import get_colombia_now
 from ..config import settings
@@ -30,13 +30,16 @@ class ActivityType(str, enum.Enum):
     ROLE_CHANGE = "role_change"
     STATUS_CHANGE = "status_change"
 
-class UserActivityLog(BaseModel, Base):
+class UserActivityLog(Base):
     """Modelo de logs de actividad de usuario"""
     __tablename__ = "user_activity_logs"
     
+    # Campo ID
     if settings.database_url.startswith("sqlite"):
+        id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
         user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
     else:
+        id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
         user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     
     activity_type = Column(Enum(ActivityType), nullable=False)

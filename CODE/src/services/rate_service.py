@@ -5,6 +5,7 @@
 from sqlalchemy.orm import Session
 from typing import Dict, Any
 from decimal import Decimal
+from datetime import datetime
 
 from ..models.rate import Rate, RateType
 from ..models.package import PackageType
